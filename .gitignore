@@ -1,0 +1,39 @@
+# Virtual environments
+.venv/
+.venv*/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Secrets and credentials (NEVER commit these!)
+.env
+credentials.json
+*.key
+*.pem
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and debug
+logs/
+*.log
+captcha_debug/
+
+# Screenshots and results
+screenshots/
+results/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Stats (optional, can be committed if you want history)
+prompt_stats.json

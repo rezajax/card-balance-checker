@@ -1,0 +1,3051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           Vercel/shadcn-inspired Minimal Design
+           ============================================ */
+        
+        :root {
+            --background: #000;
+            --foreground: #fafafa;
+            --card: #0a0a0a;
+            --card-foreground: #fafafa;
+            --border: #27272a;
+            --input: #27272a;
+            --primary: #fafafa;
+            --primary-foreground: #18181b;
+            --secondary: #27272a;
+            --secondary-foreground: #fafafa;
+            --muted: #27272a;
+            --muted-foreground: #a1a1aa;
+            --accent: #27272a;
+            --destructive: #ef4444;
+            --success: #22c55e;
+            --warning: #eab308;
+            --radius: 8px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--foreground);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: var(--muted-foreground);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+        
+        .tab:hover {
+            color: var(--foreground);
+        }
+        
+        .tab.active {
+            color: var(--foreground);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--foreground);
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .card-description {
+            font-size: 14px;
+            color: var(--muted-foreground);
+            margin-top: 4px;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+            border-color: var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--accent);
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted-foreground);
+        }
+        
+        .btn-ghost:hover {
+            background: var(--secondary);
+            color: var(--foreground);
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        
+        .btn-icon {
+            padding: 8px;
+            width: 36px;
+            height: 36px;
+        }
+        
+        /* Inputs */
+        .input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--foreground);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: var(--muted-foreground);
+        }
+        
+        .input::placeholder {
+            color: var(--muted-foreground);
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--foreground);
+        }
+        
+        .input-hint {
+            font-size: 12px;
+            color: var(--muted-foreground);
+            margin-top: 4px;
+        }
+        
+        /* Grid */
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Stats */
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--muted-foreground);
+            margin-top: 8px;
+        }
+        
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.destructive { color: var(--destructive); }
+        
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 9999px;
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+        
+        .badge-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+        
+        .badge-destructive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--destructive);
+        }
+        
+        .badge-warning {
+            background: rgba(234, 179, 8, 0.1);
+            color: var(--warning);
+        }
+        
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .table th {
+            font-weight: 500;
+            color: var(--muted-foreground);
+            background: var(--secondary);
+            font-size: 13px;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tr:hover td {
+            background: var(--secondary);
+        }
+        
+        /* Switch */
+        .switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--input);
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+        
+        .switch-slider::before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--foreground);
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .switch input:checked + .switch-slider {
+            background: var(--success);
+        }
+        
+        .switch input:checked + .switch-slider::before {
+            transform: translateX(20px);
+        }
+        
+        /* Log Panel */
+        .log-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--card);
+            z-index: 10;
+        }
+        
+        .log-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted-foreground);
+        }
+        
+        .log-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .log-content {
+            padding: 12px 16px;
+        }
+        
+        .log-entry {
+            display: flex;
+            gap: 12px;
+            padding: 6px 0;
+            border-left: 2px solid transparent;
+            padding-left: 12px;
+            margin-left: -12px;
+        }
+        
+        .log-entry.info { border-color: var(--muted-foreground); }
+        .log-entry.success { border-color: var(--success); }
+        .log-entry.error { border-color: var(--destructive); }
+        .log-entry.warning { border-color: var(--warning); }
+        .log-entry.step { border-color: #3b82f6; }
+        
+        .log-time {
+            color: var(--muted-foreground);
+            min-width: 70px;
+            font-size: 12px;
+        }
+        
+        .log-message {
+            color: var(--foreground);
+        }
+        
+        .log-entry.error .log-message { color: var(--destructive); }
+        .log-entry.success .log-message { color: var(--success); }
+        
+        /* Progress */
+        .progress-container {
+            margin-top: 16px;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--foreground);
+            transition: width 0.3s;
+        }
+        
+        .progress-fill.success { background: var(--success); }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted-foreground);
+            margin-top: 8px;
+        }
+        
+        /* Exit Node List */
+        .node-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .node-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color 0.2s;
+        }
+        
+        .node-item:hover {
+            border-color: var(--muted-foreground);
+        }
+        
+        .node-item.active {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.05);
+        }
+        
+        .node-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .node-hostname {
+            font-weight: 500;
+        }
+        
+        .node-ip {
+            font-size: 12px;
+            color: var(--muted-foreground);
+            font-family: monospace;
+        }
+        
+        /* Card Item */
+        .card-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-item:last-child {
+            border-bottom: none;
+        }
+        
+        .card-item:hover {
+            background: var(--secondary);
+        }
+        
+        .card-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .card-number {
+            font-family: monospace;
+            font-weight: 500;
+        }
+        
+        .card-meta {
+            font-size: 13px;
+            color: var(--muted-foreground);
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        /* Settings Row */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .setting-label {
+            font-weight: 500;
+        }
+        
+        .setting-description {
+            font-size: 13px;
+            color: var(--muted-foreground);
+        }
+        
+        /* Range Input */
+        .range-input {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .range-slider {
+            -webkit-appearance: none;
+            width: 120px;
+            height: 4px;
+            background: var(--input);
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--foreground);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .range-value {
+            min-width: 24px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        /* Spinner */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--muted-foreground);
+        }
+        
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        /* SVG Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--muted-foreground);
+        }
+        
+        /* Utilities */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 8px; }
+        .gap-4 { gap: 16px; }
+        .mt-4 { margin-top: 16px; }
+        .mb-4 { margin-bottom: 16px; }
+        .text-sm { font-size: 13px; }
+        .text-muted { color: var(--muted-foreground); }
+        .font-mono { font-family: monospace; }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: toast-slide-in 0.3s ease-out;
+            min-width: 280px;
+            max-width: 400px;
+        }
+        
+        .toast.toast-exit {
+            animation: toast-slide-out 0.2s ease-in forwards;
+        }
+        
+        .toast-success {
+            border-left: 4px solid #22c55e;
+        }
+        
+        .toast-error {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .toast-info {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .toast-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .toast-icon.success { color: #22c55e; }
+        .toast-icon.error { color: #ef4444; }
+        .toast-icon.info { color: #3b82f6; }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--card-foreground);
+        }
+        
+        .toast-message {
+            font-size: 13px;
+            color: var(--muted-foreground);
+            margin-top: 2px;
+        }
+        
+        @keyframes toast-slide-in {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes toast-slide-out {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="5" width="20" height="14" rx="2"/>
+                        <path d="M2 10h20"/>
+                    </svg>
+                </div>
+                <span>Card Checker</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-ghost btn-sm" id="refreshAllBtn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M3 21v-5h5"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </header>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">Dashboard</button>
+            <button class="tab" data-tab="cards">Cards</button>
+            <button class="tab" data-tab="nodes">Exit Nodes</button>
+            <button class="tab" data-tab="settings">Settings</button>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="main-grid">
+                <div>
+                    <!-- Stats -->
+                    <div class="grid grid-4 mb-4">
+                        <div class="card stat-card">
+                            <div class="stat-value" id="statTotal">-</div>
+                            <div class="stat-label">Total Cards</div>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-value success" id="statChecked">-</div>
+                            <div class="stat-label">Checked</div>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-value warning" id="statUnchecked">-</div>
+                            <div class="stat-label">Unchecked</div>
+                        </div>
+                        <div class="card stat-card">
+                            <div class="stat-value destructive" id="statDuplicates">-</div>
+                            <div class="stat-label">Duplicates</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Manual Check -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Manual Check</div>
+                                <div class="card-description">Enter card details to check balance</div>
+                            </div>
+                        </div>
+                        
+                        <form id="checkForm">
+                            <div class="input-group">
+                                <label class="input-label">Card Number</label>
+                                <input type="text" class="input font-mono" id="cardNumber" 
+                                       placeholder="1234 5678 9012 3456" maxlength="19" required>
+                            </div>
+                            
+                            <div class="grid grid-3">
+                                <div class="input-group">
+                                    <label class="input-label">Month</label>
+                                    <input type="text" class="input" id="expMonth" 
+                                           placeholder="MM" maxlength="2" required>
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Year</label>
+                                    <input type="text" class="input" id="expYear" 
+                                           placeholder="YY" maxlength="2" required>
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">CVV</label>
+                                    <input type="password" class="input" id="cvv" 
+                                           placeholder="***" maxlength="3" required>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submitBtn" style="width: 100%">
+                                <span class="btn-text">Check Balance</span>
+                                <span class="btn-loading hidden">
+                                    <span class="spinner"></span>
+                                    Checking...
+                                </span>
+                            </button>
+                        </form>
+                        
+                        <!-- Result -->
+                        <div id="resultBox" class="hidden mt-4">
+                            <div id="resultSuccess" class="hidden" style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); border-radius: var(--radius); padding: 16px;">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    <span style="color: var(--success); font-weight: 500;">Success</span>
+                                </div>
+                                <div style="font-size: 32px; font-weight: 700; color: var(--success);" id="balanceAmount">$0.00</div>
+                                <div id="cardholderName" class="text-sm text-muted mt-4"></div>
+                            </div>
+                            <div id="resultError" class="hidden" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--destructive); border-radius: var(--radius); padding: 16px;">
+                                <div class="flex items-center gap-2">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--destructive)" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="15" y1="9" x2="9" y2="15"/>
+                                        <line x1="9" y1="9" x2="15" y2="15"/>
+                                    </svg>
+                                    <span style="color: var(--destructive); font-weight: 500;">Error</span>
+                                </div>
+                                <div id="errorMessage" class="text-sm mt-4" style="color: var(--destructive);"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Range Check -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Batch Check</div>
+                                <div class="card-description">Check cards from row range in Google Sheets</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-2">
+                            <div class="input-group">
+                                <label class="input-label">Start Row</label>
+                                <input type="number" class="input" id="startRow" value="1" min="1">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">End Row</label>
+                                <input type="number" class="input" id="endRow" value="100" min="1">
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary" id="previewRangeBtn">Preview</button>
+                            <button class="btn btn-primary" id="checkRangeBtn">Check Range</button>
+                        </div>
+                        
+                        <div id="rangePreview" class="hidden mt-4">
+                            <div class="text-sm text-muted" id="rangeInfo"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Log Panel -->
+                <div>
+                    <div class="log-panel">
+                        <div class="log-header">
+                            <div class="log-status">
+                                <div class="log-status-dot" id="logStatusDot"></div>
+                                <span id="logStatusText">Connected</span>
+                            </div>
+                            <button class="btn btn-ghost btn-sm" id="clearLogsBtn">Clear</button>
+                        </div>
+                        <div class="log-content" id="logContainer">
+                            <div class="log-entry info">
+                                <span class="log-time">--:--:--</span>
+                                <span class="log-message">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress -->
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="progressLabel">Idle</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        
+                        <!-- Current Task & Cancel -->
+                        <div id="currentTaskBox" class="hidden" style="margin-top: 12px; padding: 12px; background: var(--secondary); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div class="text-sm" style="color: var(--warning);">
+                                    <span class="spinner" style="display: inline-block; width: 12px; height: 12px; margin-right: 8px;"></span>
+                                    Running
+                                </div>
+                                <div class="text-sm text-muted" id="currentTaskName">-</div>
+                            </div>
+                            <button class="btn btn-sm" id="cancelTaskBtn" style="background: var(--destructive); color: white;">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="15" y1="9" x2="9" y2="15"/>
+                                    <line x1="9" y1="9" x2="15" y2="15"/>
+                                </svg>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent History -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <div class="card-title">Recent Activity</div>
+                            <button class="btn btn-ghost btn-sm" id="clearHistoryBtn">Clear</button>
+                        </div>
+                        <div id="historyList" style="max-height: 200px; overflow-y: auto;">
+                            <div class="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 3v18h18"/>
+                                    <path d="M18 9l-6-6-3 3-4-4"/>
+                                </svg>
+                                <p>No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cards Tab -->
+        <div class="tab-content" id="cards">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Sheet Cards</div>
+                        <div class="card-description">Cards loaded from Google Sheets</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-secondary btn-sm" id="refreshCardsBtn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                <path d="M21 3v5h-5"/>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filter -->
+                <div class="flex gap-2 mb-4">
+                    <button class="btn btn-secondary btn-sm filter-btn active" data-filter="all">All</button>
+                    <button class="btn btn-ghost btn-sm filter-btn" data-filter="unchecked">Unchecked</button>
+                    <button class="btn btn-ghost btn-sm filter-btn" data-filter="checked">Checked</button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Row</th>
+                                <th>Card Number</th>
+                                <th>Exp Date</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cardsTableBody">
+                            <tr>
+                                <td colspan="6" class="empty-state">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Exit Nodes Tab -->
+        <div class="tab-content" id="nodes">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Tailscale Exit Nodes</div>
+                        <div class="card-description">Available exit nodes for IP rotation</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-ghost btn-sm" id="disableNodeBtn">Disable</button>
+                        <button class="btn btn-secondary btn-sm" id="refreshNodesBtn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                <path d="M21 3v5h-5"/>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 mb-4" style="flex-wrap: wrap;">
+                    <span class="text-sm text-muted">Current:</span>
+                    <span class="badge badge-success" id="currentNode">None</span>
+                    <button class="btn btn-sm" id="disconnectCurrentBtn" style="background: var(--destructive); color: white; display: none;">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                            <line x1="12" y1="2" x2="12" y2="12"/>
+                        </svg>
+                        Disconnect
+                    </button>
+                </div>
+                
+                <div class="node-list" id="nodesList">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <p>Loading exit nodes...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Settings</div>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Show Browser</div>
+                        <div class="setting-description">Display browser window during checks</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="settingHeadless" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Skip Duplicates</div>
+                        <div class="setting-description">Skip cards that appear multiple times</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="settingSkipDuplicates" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Skip Checked</div>
+                        <div class="setting-description">Skip cards that already have balance</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="settingSkipChecked" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">CAPTCHA Mode</div>
+                        <div class="setting-description">Choose how to handle reCAPTCHA challenges</div>
+                    </div>
+                    <div class="flex gap-2" style="flex-wrap: wrap;">
+                        <button class="btn btn-sm captcha-mode-btn" id="captchaModeAuto" data-mode="auto">Auto (Exit Nodes)</button>
+                        <button class="btn btn-sm captcha-mode-btn" id="captchaModeAI" data-mode="ai" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">AI Solver</button>
+                        <button class="btn btn-sm captcha-mode-btn" id="captchaModeGemini" data-mode="gemini" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc05 75%, #ea4335 100%); border: none;">Gemini AI</button>
+                        <button class="btn btn-sm captcha-mode-btn" id="captchaModeManual" data-mode="manual">Manual</button>
+                    </div>
+                </div>
+                
+                <div class="setting-row" id="aiInfoRow" style="display: none;">
+                    <div class="setting-info" style="width: 100%;">
+                        <div class="setting-description" style="padding: 12px; background: rgba(102, 126, 234, 0.1); border-radius: var(--radius); border-left: 3px solid #667eea;">
+                            <strong style="color: #667eea;">AI CAPTCHA Solver (YOLO)</strong><br>
+                            Uses YOLO vision model trained on 57k reCAPTCHA images.<br>
+                            <span class="text-muted">First run downloads ~500MB model. Solves in ~20-30 seconds.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gemini AI Settings Section -->
+                <div id="geminiSettingsSection" style="display: none; margin-top: 16px; padding: 16px; background: rgba(66, 133, 244, 0.05); border-radius: var(--radius); border: 1px solid rgba(66, 133, 244, 0.2);">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#4285f4"/>
+                            <path d="M2 17L12 22L22 17" stroke="#34a853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="#fbbc05" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span style="font-weight: 600; color: #4285f4;">Gemini AI CAPTCHA Solver</span>
+                    </div>
+                    
+                    <div class="setting-description" style="margin-bottom: 16px; padding: 8px; background: rgba(251, 188, 5, 0.1); border-radius: 4px;">
+                        <strong>Free Tier Limits:</strong> Gemini 2.0 Flash: 10 RPM, 250/day per project<br>
+                        <span class="text-muted">Use multiple Google accounts for more API keys!</span>
+                    </div>
+                    
+                    <!-- API Keys Management -->
+                    <div class="input-group">
+                        <label class="input-label">API Keys (one per line)</label>
+                        <textarea class="input" id="geminiApiKeys" rows="4" 
+                            placeholder="AIzaSy...key1&#10;AIzaSy...key2&#10;AIzaSy...key3"
+                            style="font-family: monospace; font-size: 12px; resize: vertical;"></textarea>
+                        <div class="input-hint">Add multiple keys for automatic rotation when rate-limited</div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <button class="btn btn-sm btn-secondary" id="testGeminiKeyBtn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Test Current Key
+                        </button>
+                        <button class="btn btn-sm btn-ghost" id="rotateGeminiKeyBtn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                <path d="M21 3v5h-5"/>
+                            </svg>
+                            Rotate Key
+                        </button>
+                        <button class="btn btn-sm btn-ghost" id="refreshKeysStatusBtn" title="Refresh Keys Status">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6"/>
+                                <path d="M1 20v-6h6"/>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                            </svg>
+                            Refresh Stats
+                        </button>
+                        <span class="badge" id="geminiKeyStatus">Key 0/0</span>
+                    </div>
+                    
+                    <!-- API Keys Usage Status -->
+                    <div id="geminiKeysStatusPanel" style="margin-bottom: 16px; padding: 12px; background: rgba(0,0,0,0.1); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-weight: 600; font-size: 13px;">API Keys Usage</span>
+                            <span id="geminiKeysQuickStatus" class="badge" style="font-size: 11px;">Loading...</span>
+                        </div>
+                        
+                        <!-- Summary -->
+                        <div id="geminiKeysSummary" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+                            <div style="text-align: center; padding: 8px 12px; background: rgba(74, 222, 128, 0.1); border-radius: 6px; min-width: 80px;">
+                                <div style="font-size: 20px; font-weight: 700; color: #4ade80;" id="summaryAvailable">-</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">Available</div>
+                            </div>
+                            <div style="text-align: center; padding: 8px 12px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; min-width: 80px;">
+                                <div style="font-size: 20px; font-weight: 700; color: #3b82f6;" id="summaryRemaining">-</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">Remaining Req</div>
+                            </div>
+                            <div style="text-align: center; padding: 8px 12px; background: rgba(168, 85, 247, 0.1); border-radius: 6px; min-width: 80px;">
+                                <div style="font-size: 20px; font-weight: 700; color: #a855f7;" id="summaryTotalReqs">-</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">Total Used</div>
+                            </div>
+                            <div style="text-align: center; padding: 8px 12px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; min-width: 80px;">
+                                <div style="font-size: 20px; font-weight: 700; color: #ef4444;" id="summaryRateLimits">-</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">Rate Limits</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Individual Keys Status -->
+                        <div id="geminiKeysDetail" style="display: flex; flex-direction: column; gap: 6px;">
+                            <div style="text-align: center; color: var(--text-secondary); font-size: 12px;">
+                                No API keys configured
+                            </div>
+                        </div>
+                        
+                        <!-- Reset Stats Button -->
+                        <div style="margin-top: 12px; text-align: right;">
+                            <button class="btn btn-ghost btn-sm" id="resetGeminiStatsBtn" style="font-size: 11px; padding: 4px 8px;">
+                                Reset Stats
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Model Selection -->
+                    <div class="input-group">
+                        <label class="input-label">Model</label>
+                        <select class="input" id="geminiModel" style="background: var(--background);">
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option>
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Best quality, slower)</option>
+                            <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite (Fastest)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Prompt Preset Selector -->
+                    <div class="input-group">
+                        <label class="input-label">Prompt Template</label>
+                        <select class="input" id="geminiPromptPreset" style="padding: 8px 12px;">
+                            <option value="detailed">📋 Detailed - Full visual grid diagram</option>
+                            <option value="simple">⚡ Simple - Compact with essential info</option>
+                            <option value="visual">📊 Visual Table - Row/Column format</option>
+                            <option value="expert">🎯 Expert (Research-Based) - Best for multi-tile objects</option>
+                            <option value="custom">✏️ Custom - Write your own prompt</option>
+                        </select>
+                        <div class="input-hint" id="presetDescription" style="margin-top: 8px; padding: 8px; background: rgba(66, 133, 244, 0.1); border-radius: 4px;">
+                            Full visual grid diagram with clear tile numbering explanation
+                        </div>
+                    </div>
+                    
+                    <!-- Prompt Management Button -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <button class="btn btn-sm btn-secondary" onclick="openPromptsManager()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Manage Prompts
+                        </button>
+                        <button class="btn btn-sm btn-ghost" onclick="openPromptStats()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 20V10"/>
+                                <path d="M12 20V4"/>
+                                <path d="M6 20v-6"/>
+                            </svg>
+                            View Stats
+                        </button>
+                    </div>
+                    
+                    <!-- Custom Prompt (shown only when custom preset is selected) -->
+                    <div class="input-group" id="customPromptGroup" style="display: none;">
+                        <label class="input-label">Custom Prompt</label>
+                        <textarea class="input" id="geminiPrompt" rows="8" 
+                            style="font-family: monospace; font-size: 12px; resize: vertical;"
+                            placeholder="Write your custom prompt here..."></textarea>
+                        <div class="input-hint">
+                            <span class="text-muted">Include clear grid numbering instructions for best results</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview of selected preset - Shows FULL prompt -->
+                    <div class="input-group" id="presetPreviewGroup">
+                        <label class="input-label">
+                            <span>Full Prompt (will be sent to Gemini)</span>
+                        </label>
+                        <pre id="presetPreview" style="font-family: monospace; font-size: 11px; background: var(--muted); padding: 12px; border-radius: 4px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; margin: 0; border: 1px solid var(--border);"></pre>
+                    </div>
+                    
+                    <!-- Dynamic Recheck Mode -->
+                    <div class="setting-row" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(66, 133, 244, 0.2);">
+                        <div class="setting-info">
+                            <div class="setting-label" style="color: #4285f4;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 4px;">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                    <path d="M21 3v5h-5"/>
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                    <path d="M8 16H3v5"/>
+                                </svg>
+                                Dynamic Recheck Mode
+                            </div>
+                            <div class="setting-description">
+                                <strong style="color: #34a853;">Recommended!</strong> Click one tile, re-analyze, repeat.<br>
+                                <span class="text-muted">Fixes issue where refreshed tiles were skipped.</span>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="settingGeminiDynamicRecheck" checked>
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <!-- Debug Save Setting -->
+                    <div class="setting-row" style="margin-top: 12px;">
+                        <div class="setting-info">
+                            <div class="setting-label" style="color: #f4b400;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 4px;">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                                Save Debug Data
+                            </div>
+                            <div class="setting-description">
+                                Save CAPTCHA images and Gemini responses to <code>captcha_debug/</code> folder.<br>
+                                <span class="text-muted">Useful for debugging when CAPTCHA solving fails.</span>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="settingGeminiDebugSave">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-row" id="maxRetriesRow">
+                    <div class="setting-info">
+                        <div class="setting-label">Max Retries</div>
+                        <div class="setting-description">Number of exit node switches on CAPTCHA</div>
+                    </div>
+                    <div class="range-input">
+                        <input type="range" class="range-slider" id="settingMaxRetries" min="1" max="10" value="5">
+                        <span class="range-value" id="maxRetriesValue">5</span>
+                    </div>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Timeout (seconds)</div>
+                        <div class="setting-description">Maximum wait time for page load</div>
+                    </div>
+                    <div class="range-input">
+                        <input type="range" class="range-slider" id="settingTimeout" min="30" max="120" value="60" step="10">
+                        <span class="range-value" id="timeoutValue">60</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <div class="card-title" style="margin-bottom: 16px;">Exit Node Settings</div>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Always Use Exit Node</div>
+                        <div class="setting-description">Connect to an exit node before each check</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="settingAlwaysUseExitNode">
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Disconnect After Task</div>
+                        <div class="setting-description">Disconnect from exit node when task completes</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="settingDisconnectAfterTask">
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-row" style="border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px;">
+                    <div class="setting-info">
+                        <div class="setting-label">Debug Logging</div>
+                        <div class="setting-description">Enable verbose debug logs for troubleshooting</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="settingDebugLogging">
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary mt-4" id="saveSettingsBtn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ============================================
+        // Toast Notifications
+        // ============================================
+        function showToast(title, message = '', type = 'success', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icons = {
+                success: `<svg class="toast-icon success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>`,
+                error: `<svg class="toast-icon error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>`,
+                info: `<svg class="toast-icon info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>`
+            };
+            
+            toast.innerHTML = `
+                ${icons[type] || icons.info}
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    ${message ? `<div class="toast-message">${message}</div>` : ''}
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 200);
+            }, duration);
+        }
+        
+        // ============================================
+        // State
+        // ============================================
+        let settings = {
+            headless: false,
+            max_retries: 5,
+            skip_duplicates: true,
+            skip_checked: true,
+            timeout: 60000,
+            captcha_mode: 'auto',
+            always_use_exit_node: false,
+            disconnect_after_task: false,
+            debug_logging: false,
+            gemini_api_keys: [],
+            gemini_current_key_index: 0,
+            gemini_model: 'gemini-2.0-flash',
+            gemini_prompt: ''
+        };
+        
+        // Default Gemini prompt
+        const DEFAULT_GEMINI_PROMPT = `You are a CAPTCHA solver assistant. I will show you:
+1. A challenge image grid (usually 3x3 or 4x4 tiles)
+2. The challenge text asking to select specific objects
+
+Your task:
+- Analyze each tile in the grid
+- Identify which tiles contain the requested object
+- Return ONLY the tile numbers (1-9 for 3x3, 1-16 for 4x4) that match
+- Tiles are numbered left-to-right, top-to-bottom
+
+Example: If asked to "Select all images with traffic lights" and tiles 2, 5, 8 contain traffic lights, respond: "2, 5, 8"
+
+If no tiles match, respond: "none"
+If you cannot determine with confidence, respond: "uncertain"
+
+IMPORTANT: Only respond with the tile numbers, nothing else.`;
+        
+        let allCards = [];
+        let currentFilter = 'all';
+        let eventSource = null;
+        
+        // ============================================
+        // Tab Switching
+        // ============================================
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // ============================================
+        // Input Formatting
+        // ============================================
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 16) value = value.slice(0, 16);
+            let formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+            e.target.value = formatted;
+        });
+        
+        document.getElementById('expMonth').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '').slice(0, 2);
+            if (parseInt(value) > 12) value = '12';
+            e.target.value = value;
+        });
+        
+        document.getElementById('expYear').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 2);
+        });
+        
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
+        });
+        
+        // ============================================
+        // Settings
+        // ============================================
+        document.getElementById('settingMaxRetries').addEventListener('input', function(e) {
+            document.getElementById('maxRetriesValue').textContent = e.target.value;
+        });
+        
+        document.getElementById('settingTimeout').addEventListener('input', function(e) {
+            document.getElementById('timeoutValue').textContent = e.target.value;
+        });
+        
+        // CAPTCHA Mode buttons
+        document.querySelectorAll('.captcha-mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                settings.captcha_mode = btn.dataset.mode;
+                updateCaptchaModeUI(settings.captcha_mode);
+                
+                // Reset opacity for all AI buttons
+                document.querySelectorAll('.captcha-mode-btn').forEach(b => {
+                    if (b.dataset.mode === 'ai') {
+                        b.style.opacity = b.dataset.mode === settings.captcha_mode ? '1' : '0.6';
+                    }
+                });
+            });
+        });
+        
+        function updateCaptchaModeUI(mode) {
+            document.querySelectorAll('.captcha-mode-btn').forEach(btn => {
+                if (btn.dataset.mode === mode) {
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-primary');
+                    btn.style.opacity = '1';
+                    // Special styling for AI button when active
+                    if (btn.dataset.mode === 'ai') {
+                        btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        btn.style.color = 'white';
+                    }
+                    // Special styling for Gemini button when active
+                    if (btn.dataset.mode === 'gemini') {
+                        btn.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc05 75%, #ea4335 100%)';
+                        btn.style.color = 'white';
+                    }
+                } else {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+                    // Reset AI button styling when not active
+                    if (btn.dataset.mode === 'ai') {
+                        btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        btn.style.opacity = '0.6';
+                    }
+                    // Reset Gemini button styling when not active
+                    if (btn.dataset.mode === 'gemini') {
+                        btn.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc05 75%, #ea4335 100%)';
+                        btn.style.opacity = '0.6';
+                    }
+                }
+            });
+            
+            // Show max retries only for auto mode
+            document.getElementById('maxRetriesRow').style.display = 
+                mode === 'auto' ? 'flex' : 'none';
+            
+            // Show AI info only for AI mode
+            const aiInfoRow = document.getElementById('aiInfoRow');
+            if (aiInfoRow) {
+                aiInfoRow.style.display = mode === 'ai' ? 'flex' : 'none';
+            }
+            
+            // Show Gemini settings only for gemini mode
+            const geminiSection = document.getElementById('geminiSettingsSection');
+            if (geminiSection) {
+                geminiSection.style.display = mode === 'gemini' ? 'block' : 'none';
+                
+                // Start/stop auto-refresh based on mode
+                if (mode === 'gemini') {
+                    fetchGeminiKeysStatus(); // Fetch immediately
+                    startKeysStatusRefresh(); // Start auto-refresh
+                } else {
+                    stopKeysStatusRefresh(); // Stop auto-refresh
+                }
+            }
+        }
+        
+        document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+            // Parse Gemini API keys from textarea
+            const keysText = document.getElementById('geminiApiKeys').value.trim();
+            const geminiKeys = keysText ? keysText.split('\n').map(k => k.trim()).filter(k => k.length > 0) : [];
+            
+            settings = {
+                headless: !document.getElementById('settingHeadless').checked,
+                max_retries: parseInt(document.getElementById('settingMaxRetries').value),
+                skip_duplicates: document.getElementById('settingSkipDuplicates').checked,
+                skip_checked: document.getElementById('settingSkipChecked').checked,
+                timeout: parseInt(document.getElementById('settingTimeout').value) * 1000,
+                captcha_mode: settings.captcha_mode,
+                always_use_exit_node: document.getElementById('settingAlwaysUseExitNode').checked,
+                disconnect_after_task: document.getElementById('settingDisconnectAfterTask').checked,
+                debug_logging: document.getElementById('settingDebugLogging').checked,
+                gemini_api_keys: geminiKeys,
+                gemini_current_key_index: settings.gemini_current_key_index || 0,
+                gemini_model: document.getElementById('geminiModel').value,
+                gemini_prompt_preset: document.getElementById('geminiPromptPreset').value,
+                gemini_prompt: document.getElementById('geminiPrompt').value || '',
+                gemini_dynamic_recheck: document.getElementById('settingGeminiDynamicRecheck').checked,
+                gemini_debug_save: document.getElementById('settingGeminiDebugSave').checked
+            };
+            
+            try {
+                const response = await fetch('/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+                
+                if (response.ok) {
+                    showToast('Settings Saved', geminiKeys.length > 0 ? `${geminiKeys.length} Gemini API key(s) configured` : 'All settings saved successfully', 'success');
+                    addLog(`Settings saved (${geminiKeys.length} Gemini keys)`, 'success');
+                    updateGeminiKeyStatus();
+                } else {
+                    const data = await response.json();
+                    showToast('Save Failed', data.error || 'Unknown error', 'error');
+                    addLog('Failed to save settings', 'error');
+                }
+            } catch (e) {
+                showToast('Save Failed', 'Could not connect to server', 'error');
+                addLog('Failed to save settings', 'error');
+            }
+        });
+        
+        // Gemini key status update
+        function updateGeminiKeyStatus() {
+            const keyStatus = document.getElementById('geminiKeyStatus');
+            const keysText = document.getElementById('geminiApiKeys').value.trim();
+            const keys = keysText ? keysText.split('\n').filter(k => k.trim().length > 0) : [];
+            const currentIndex = settings.gemini_current_key_index || 0;
+            
+            if (keys.length > 0) {
+                keyStatus.textContent = `Key ${currentIndex + 1}/${keys.length}`;
+                keyStatus.classList.add('badge-success');
+                keyStatus.classList.remove('badge-warning');
+            } else {
+                keyStatus.textContent = 'No keys';
+                keyStatus.classList.add('badge-warning');
+                keyStatus.classList.remove('badge-success');
+            }
+            
+            // Also fetch detailed stats from server
+            fetchGeminiKeysStatus();
+        }
+        
+        // Fetch detailed Gemini keys status from server
+        async function fetchGeminiKeysStatus() {
+            try {
+                const response = await fetch('/gemini/keys_status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateGeminiKeysPanel(data);
+                }
+            } catch (e) {
+                console.log('Could not fetch Gemini keys status:', e);
+            }
+        }
+        
+        // Update the Gemini keys status panel
+        function updateGeminiKeysPanel(data) {
+            // Update quick status badge
+            const quickStatus = document.getElementById('geminiKeysQuickStatus');
+            if (data.total_keys === 0) {
+                quickStatus.textContent = 'No keys';
+                quickStatus.style.background = 'rgba(239, 68, 68, 0.2)';
+                quickStatus.style.color = '#ef4444';
+            } else if (data.available_keys === 0) {
+                const waitTime = data.next_available_in ? Math.ceil(data.next_available_in) : 0;
+                quickStatus.textContent = waitTime > 0 ? `All limited (${waitTime}s)` : 'All rate limited';
+                quickStatus.style.background = 'rgba(239, 68, 68, 0.2)';
+                quickStatus.style.color = '#ef4444';
+            } else {
+                quickStatus.textContent = `${data.total_remaining_requests} req available`;
+                quickStatus.style.background = 'rgba(74, 222, 128, 0.2)';
+                quickStatus.style.color = '#4ade80';
+            }
+            
+            // Update summary numbers
+            document.getElementById('summaryAvailable').textContent = data.available_keys || 0;
+            document.getElementById('summaryRemaining').textContent = data.total_remaining_requests || 0;
+            document.getElementById('summaryTotalReqs').textContent = data.total_requests_made || 0;
+            document.getElementById('summaryRateLimits').textContent = data.total_rate_limits_hit || 0;
+            
+            // Update individual keys detail
+            const detailContainer = document.getElementById('geminiKeysDetail');
+            
+            if (!data.keys || data.keys.length === 0) {
+                detailContainer.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); font-size: 12px;">
+                        No API keys configured
+                    </div>
+                `;
+                return;
+            }
+            
+            detailContainer.innerHTML = data.keys.map(key => {
+                const remaining = key.remaining_this_minute;
+                const limit = key.limit_per_minute;
+                const percent = (remaining / limit) * 100;
+                
+                let statusColor, statusText;
+                if (!key.is_available) {
+                    const waitTime = Math.ceil(key.time_until_available);
+                    statusColor = '#ef4444';
+                    statusText = `Rate limited (${waitTime}s)`;
+                } else if (remaining === 0) {
+                    statusColor = '#f59e0b';
+                    statusText = 'Limit reached';
+                } else {
+                    statusColor = '#4ade80';
+                    statusText = `${remaining}/${limit} req/min`;
+                }
+                
+                return `
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                        <span style="font-weight: 600; font-size: 12px; min-width: 50px;">Key ${key.key_number}</span>
+                        <span style="font-family: monospace; font-size: 11px; color: var(--text-secondary);">${key.key_masked}</span>
+                        <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                            <div style="width: ${percent}%; height: 100%; background: ${statusColor}; transition: width 0.3s;"></div>
+                        </div>
+                        <span style="font-size: 11px; color: ${statusColor}; min-width: 100px; text-align: right;">${statusText}</span>
+                        <span style="font-size: 10px; color: var(--text-secondary);">(${key.total_requests} total)</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Auto-refresh keys status every 5 seconds when Gemini mode is active
+        let keysStatusInterval = null;
+        
+        function startKeysStatusRefresh() {
+            if (keysStatusInterval) return;
+            keysStatusInterval = setInterval(() => {
+                if (document.getElementById('geminiSettingsSection').style.display !== 'none') {
+                    fetchGeminiKeysStatus();
+                }
+            }, 5000);
+        }
+        
+        function stopKeysStatusRefresh() {
+            if (keysStatusInterval) {
+                clearInterval(keysStatusInterval);
+                keysStatusInterval = null;
+            }
+        }
+        
+        // Refresh keys status button
+        document.getElementById('refreshKeysStatusBtn').addEventListener('click', () => {
+            fetchGeminiKeysStatus();
+            addLog('Refreshed API keys status', 'info');
+        });
+        
+        // Reset stats button
+        document.getElementById('resetGeminiStatsBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/gemini/reset_stats', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog(data.message, 'success');
+                    fetchGeminiKeysStatus();
+                } else {
+                    addLog(`Reset failed: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                addLog(`Reset failed: ${e.message}`, 'error');
+            }
+        });
+        
+        // Test Gemini key button
+        document.getElementById('testGeminiKeyBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('testGeminiKeyBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Testing...';
+            
+            try {
+                const response = await fetch('/gemini/test', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog(`Gemini: ${data.message}`, 'success');
+                } else {
+                    addLog(`Gemini: ${data.error}`, 'error');
+                    if (data.should_rotate) {
+                        addLog('Consider rotating to next key', 'warning');
+                    }
+                }
+            } catch (e) {
+                addLog(`Gemini test failed: ${e.message}`, 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Test Current Key';
+        });
+        
+        // Rotate Gemini key button
+        document.getElementById('rotateGeminiKeyBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/gemini/rotate_key', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    settings.gemini_current_key_index = data.current_key_index;
+                    addLog(data.message, 'success');
+                    updateGeminiKeyStatus();
+                } else {
+                    addLog(`Rotate failed: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                addLog(`Rotate failed: ${e.message}`, 'error');
+            }
+        });
+        
+        // Gemini Prompt Presets
+        let promptPresets = {};
+        
+        // Load prompt presets from server
+        async function loadPromptPresets() {
+            try {
+                const response = await fetch('/gemini/prompt_presets');
+                const data = await response.json();
+                if (data.success) {
+                    promptPresets = data.presets;
+                    updatePresetUI();
+                }
+            } catch (e) {
+                console.error('Failed to load prompt presets:', e);
+            }
+        }
+        
+        // Update UI based on selected preset
+        function updatePresetUI() {
+            const preset = document.getElementById('geminiPromptPreset').value;
+            const customGroup = document.getElementById('customPromptGroup');
+            const previewGroup = document.getElementById('presetPreviewGroup');
+            const description = document.getElementById('presetDescription');
+            const preview = document.getElementById('presetPreview');
+            
+            if (preset === 'custom') {
+                customGroup.style.display = 'block';
+                previewGroup.style.display = 'none';
+                description.textContent = 'Write your own custom prompt with grid instructions';
+            } else {
+                customGroup.style.display = 'none';
+                previewGroup.style.display = 'block';
+                
+                // Update description and preview from presets
+                if (promptPresets[preset]) {
+                    description.textContent = promptPresets[preset].description;
+                    updatePresetPreview(preset);
+                }
+            }
+        }
+        
+        // Update the preview text - show FULL prompt
+        async function updatePresetPreview(preset) {
+            const preview = document.getElementById('presetPreview');
+            if (promptPresets[preset] && promptPresets[preset].full_prompt) {
+                preview.textContent = promptPresets[preset].full_prompt;
+            } else {
+                preview.textContent = '(No prompt available)';
+            }
+        }
+        
+        // Preset selector change handler
+        document.getElementById('geminiPromptPreset').addEventListener('change', updatePresetUI);
+        
+        // Load presets on page load
+        loadPromptPresets();
+        
+        // Update key count when textarea changes
+        document.getElementById('geminiApiKeys').addEventListener('input', updateGeminiKeyStatus);
+        
+        // ============================================
+        // Logging
+        // ============================================
+        function addLog(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const time = new Date().toLocaleTimeString();
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-message">${message}</span>
+            `;
+            
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+            
+            // Limit entries
+            while (container.children.length > 100) {
+                container.removeChild(container.firstChild);
+            }
+        }
+        
+        function updateProgress(label, percent) {
+            document.getElementById('progressLabel').textContent = label;
+            document.getElementById('progressPercent').textContent = percent + '%';
+            const bar = document.getElementById('progressBar');
+            bar.style.width = percent + '%';
+            bar.classList.toggle('success', percent >= 100);
+        }
+        
+        // Initialize SSE
+        function initLogStream() {
+            eventSource = new EventSource('/logs');
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.log) {
+                        let type = 'info';
+                        if (data.log.includes('ERROR')) type = 'error';
+                        else if (data.log.includes('WARNING')) type = 'warning';
+                        else if (data.log.includes('[STEP]')) type = 'step';
+                        else if (data.log.includes('SUCCESS')) type = 'success';
+                        
+                        const parts = data.log.split(' - ');
+                        const message = parts.length > 2 ? parts.slice(2).join(' - ') : data.log;
+                        addLog(message, type);
+                    }
+                } catch (e) {}
+            };
+            
+            eventSource.onerror = function() {
+                document.getElementById('logStatusDot').style.background = 'var(--destructive)';
+                document.getElementById('logStatusText').textContent = 'Disconnected';
+                setTimeout(initLogStream, 3000);
+            };
+            
+            eventSource.onopen = function() {
+                document.getElementById('logStatusDot').style.background = 'var(--success)';
+                document.getElementById('logStatusText').textContent = 'Connected';
+            };
+        }
+        
+        document.getElementById('clearLogsBtn').addEventListener('click', () => {
+            document.getElementById('logContainer').innerHTML = `
+                <div class="log-entry info">
+                    <span class="log-time">--:--:--</span>
+                    <span class="log-message">Logs cleared</span>
+                </div>
+            `;
+        });
+        
+        // ============================================
+        // Form Submission
+        // ============================================
+        document.getElementById('checkForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+            
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+            document.getElementById('resultBox').classList.add('hidden');
+            
+            updateProgress('Starting...', 5);
+            
+            try {
+                const response = await fetch('/check_balance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        card_number: document.getElementById('cardNumber').value,
+                        exp_month: document.getElementById('expMonth').value,
+                        exp_year: document.getElementById('expYear').value,
+                        cvv: document.getElementById('cvv').value,
+                        headless: settings.headless,
+                        max_retries: settings.max_retries,
+                        captcha_mode: settings.captcha_mode
+                    })
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('resultBox').classList.remove('hidden');
+                
+                if (data.cancelled) {
+                    document.getElementById('resultSuccess').classList.add('hidden');
+                    document.getElementById('resultError').classList.remove('hidden');
+                    document.getElementById('errorMessage').textContent = 'Task was cancelled by user';
+                    addLog('Task cancelled', 'warning');
+                    updateProgress('Cancelled', 0);
+                } else if (data.success) {
+                    document.getElementById('resultSuccess').classList.remove('hidden');
+                    document.getElementById('resultError').classList.add('hidden');
+                    document.getElementById('balanceAmount').textContent = data.balance;
+                    document.getElementById('cardholderName').textContent = data.cardholder_name || '';
+                    addLog(`SUCCESS: Balance = ${data.balance}`, 'success');
+                    updateProgress('Completed', 100);
+                } else {
+                    document.getElementById('resultSuccess').classList.add('hidden');
+                    document.getElementById('resultError').classList.remove('hidden');
+                    document.getElementById('errorMessage').textContent = data.error || 'Unknown error';
+                    addLog(`ERROR: ${data.error}`, 'error');
+                    updateProgress('Failed', 0);
+                }
+                
+                loadHistory();
+                loadStats();
+                
+            } catch (error) {
+                document.getElementById('resultBox').classList.remove('hidden');
+                document.getElementById('resultSuccess').classList.add('hidden');
+                document.getElementById('resultError').classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = 'Connection error';
+                updateProgress('Error', 0);
+            }
+            
+            btn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+        });
+        
+        // ============================================
+        // Stats
+        // ============================================
+        async function loadStats() {
+            try {
+                const response = await fetch('/sheets/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('statTotal').textContent = data.total;
+                    document.getElementById('statChecked').textContent = data.checked;
+                    document.getElementById('statUnchecked').textContent = data.unchecked;
+                    // Show duplicate_cards (cards appearing multiple times) or duplicates_marked
+                    document.getElementById('statDuplicates').textContent = data.duplicates_marked || data.duplicate_cards || 0;
+                }
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+        
+        // ============================================
+        // Cards
+        // ============================================
+        async function loadCards() {
+            try {
+                const response = await fetch('/sheets/cards');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allCards = data.cards;
+                    renderCards();
+                }
+            } catch (e) {
+                console.error('Failed to load cards:', e);
+            }
+        }
+        
+        function renderCards() {
+            const tbody = document.getElementById('cardsTableBody');
+            let cards = allCards;
+            
+            if (currentFilter === 'unchecked') {
+                cards = cards.filter(c => !c.is_checked);
+            } else if (currentFilter === 'checked') {
+                cards = cards.filter(c => c.is_checked);
+            }
+            
+            if (cards.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No cards found</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = cards.slice(0, 50).map(card => {
+                // Format balance display
+                let balanceDisplay = '-';
+                if (card.is_duplicate) {
+                    balanceDisplay = '<span class="badge badge-warning">DUPLICATE</span>';
+                } else if (card.current_balance) {
+                    balanceDisplay = '<span class="badge badge-success">$' + card.current_balance + '</span>';
+                }
+                
+                // Format status display
+                let statusDisplay = '<span class="badge">Pending</span>';
+                if (card.is_checked) {
+                    if (card.is_duplicate) {
+                        statusDisplay = '<span class="badge badge-warning">Duplicate</span>';
+                    } else if (card.last_check_date) {
+                        // Format date nicely
+                        const checkDate = card.last_check_date.split(' ')[0]; // Just the date part
+                        statusDisplay = '<span class="badge badge-success" title="' + card.last_check_date + '">✓ ' + checkDate + '</span>';
+                    } else {
+                        statusDisplay = '<span class="badge badge-success">Checked</span>';
+                    }
+                }
+                
+                return `
+                <tr>
+                    <td>${card.row_index}</td>
+                    <td class="font-mono">****${card.card_last4}</td>
+                    <td>${card.exp}</td>
+                    <td>${balanceDisplay}</td>
+                    <td>${statusDisplay}</td>
+                    <td>
+                        ${!card.is_checked ? `<button class="btn btn-secondary btn-sm" onclick="checkCard(${card.row_index})">Check</button>` : ''}
+                    </td>
+                </tr>
+            `}).join('');
+            
+            if (cards.length > 50) {
+                tbody.innerHTML += `<tr><td colspan="6" class="text-sm text-muted" style="text-align: center;">... and ${cards.length - 50} more</td></tr>`;
+            }
+        }
+        
+        async function checkCard(rowIndex) {
+            addLog(`Checking card from row ${rowIndex}...`, 'step');
+            updateProgress('Checking...', 10);
+            
+            try {
+                const response = await fetch(`/sheets/check/${rowIndex}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        headless: settings.headless,
+                        max_retries: settings.max_retries,
+                        skip_duplicates: settings.skip_duplicates,
+                        captcha_mode: settings.captcha_mode
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.cancelled) {
+                    addLog(`Row ${rowIndex}: Cancelled`, 'warning');
+                    updateProgress('Cancelled', 0);
+                    return false; // Signal that we should stop batch processing
+                } else if (data.success) {
+                    addLog(`Row ${rowIndex}: ${data.balance}`, 'success');
+                    updateProgress('Completed', 100);
+                } else if (data.is_duplicate) {
+                    addLog(`Row ${rowIndex}: DUPLICATE (rows: ${data.duplicate_rows.join(', ')})`, 'warning');
+                    updateProgress('Skipped - duplicate', 100);
+                } else {
+                    addLog(`Row ${rowIndex}: ${data.error}`, 'error');
+                    updateProgress('Failed', 0);
+                }
+                
+                loadCards();
+                loadStats();
+                loadHistory();
+                return true; // Continue batch processing
+                
+            } catch (e) {
+                addLog(`Error: ${e.message}`, 'error');
+                updateProgress('Error', 0);
+                return true; // Continue batch despite error (or return false to stop)
+            }
+        }
+        
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.remove('btn-secondary');
+                    b.classList.add('btn-ghost');
+                });
+                btn.classList.add('active');
+                btn.classList.add('btn-secondary');
+                btn.classList.remove('btn-ghost');
+                currentFilter = btn.dataset.filter;
+                renderCards();
+            });
+        });
+        
+        document.getElementById('refreshCardsBtn').addEventListener('click', loadCards);
+        
+        // ============================================
+        // Range Check
+        // ============================================
+        document.getElementById('previewRangeBtn').addEventListener('click', async () => {
+            const startRow = parseInt(document.getElementById('startRow').value);
+            const endRow = parseInt(document.getElementById('endRow').value);
+            
+            try {
+                const response = await fetch('/sheets/check_range', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start_row: startRow,
+                        end_row: endRow,
+                        skip_checked: settings.skip_checked
+                    })
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('rangePreview').classList.remove('hidden');
+                document.getElementById('rangeInfo').textContent = data.message;
+                
+            } catch (e) {
+                addLog('Failed to preview range', 'error');
+            }
+        });
+        
+        document.getElementById('checkRangeBtn').addEventListener('click', async () => {
+            const startRow = parseInt(document.getElementById('startRow').value);
+            const endRow = parseInt(document.getElementById('endRow').value);
+            
+            addLog(`Starting batch check for rows ${startRow}-${endRow}`, 'step');
+            
+            // First get the cards in range
+            try {
+                const response = await fetch('/sheets/check_range', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start_row: startRow,
+                        end_row: endRow,
+                        skip_checked: settings.skip_checked
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.cards.length > 0) {
+                    // Check each card sequentially
+                    let completed = 0;
+                    let cancelled = false;
+                    
+                    for (let i = 0; i < data.cards.length; i++) {
+                        const card = data.cards[i];
+                        const progress = Math.round((i / data.cards.length) * 100);
+                        updateProgress(`Checking ${i + 1}/${data.cards.length}`, progress);
+                        
+                        const shouldContinue = await checkCard(card.row_index);
+                        if (shouldContinue === false) {
+                            cancelled = true;
+                            addLog(`Batch cancelled at card ${i + 1}/${data.cards.length}`, 'warning');
+                            updateProgress('Batch cancelled', 0);
+                            break;
+                        }
+                        completed++;
+                        
+                        // Small delay between cards
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                    
+                    if (!cancelled) {
+                        addLog(`Batch check completed: ${completed}/${data.cards.length} cards`, 'success');
+                        updateProgress('Batch completed', 100);
+                    }
+                } else {
+                    addLog('No cards to check in range', 'warning');
+                }
+                
+            } catch (e) {
+                addLog(`Batch check error: ${e.message}`, 'error');
+            }
+        });
+        
+        // ============================================
+        // Exit Nodes
+        // ============================================
+        async function loadNodes() {
+            try {
+                const response = await fetch('/exit_nodes');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const currentNodeEl = document.getElementById('currentNode');
+                    const disconnectBtn = document.getElementById('disconnectCurrentBtn');
+                    
+                    if (data.current_node) {
+                        currentNodeEl.textContent = data.current_node;
+                        currentNodeEl.classList.add('badge-success');
+                        currentNodeEl.classList.remove('badge');
+                        disconnectBtn.style.display = 'inline-flex';
+                    } else {
+                        currentNodeEl.textContent = 'None (Direct)';
+                        currentNodeEl.classList.remove('badge-success');
+                        currentNodeEl.classList.add('badge');
+                        disconnectBtn.style.display = 'none';
+                    }
+                    
+                    const container = document.getElementById('nodesList');
+                    
+                    if (data.nodes.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <p>No exit nodes available</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    container.innerHTML = data.nodes.map(node => `
+                        <div class="node-item ${node.active ? 'active' : ''}" data-hostname="${node.hostname}">
+                            <div class="node-info">
+                                <div class="node-hostname">${node.hostname}</div>
+                                <div class="node-ip">${node.ip}</div>
+                            </div>
+                            <button class="btn ${node.active ? 'btn-ghost' : 'btn-secondary'} btn-sm" onclick="${node.active ? 'disconnectNode()' : `switchNode('${node.hostname}')`}">
+                                ${node.active ? 'Disconnect' : 'Connect'}
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Failed to load nodes:', e);
+            }
+        }
+        
+        async function disconnectNode() {
+            addLog('Disconnecting from exit node...', 'step');
+            
+            try {
+                const response = await fetch('/exit_nodes/disable', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog('Disconnected - using direct connection', 'success');
+                    loadNodes();
+                } else {
+                    addLog(`Failed: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                addLog(`Error: ${e.message}`, 'error');
+            }
+        }
+        
+        async function switchNode(hostname) {
+            addLog(`Switching to ${hostname}...`, 'step');
+            
+            try {
+                const response = await fetch('/exit_nodes/switch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hostname })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog(`Connected to ${hostname}`, 'success');
+                    loadNodes();
+                } else {
+                    addLog(`Failed: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                addLog(`Error: ${e.message}`, 'error');
+            }
+        }
+        
+        document.getElementById('disableNodeBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/exit_nodes/disable', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog('Exit node disabled', 'success');
+                    loadNodes();
+                } else {
+                    addLog(`Failed: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                addLog(`Error: ${e.message}`, 'error');
+            }
+        });
+        
+        document.getElementById('refreshNodesBtn').addEventListener('click', loadNodes);
+        
+        document.getElementById('disconnectCurrentBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/exit_nodes/disable', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog('Disconnected from exit node', 'success');
+                    loadNodes();
+                } else {
+                    addLog(`Failed: ${data.error}`, 'error');
+                }
+            } catch (e) {
+                addLog(`Error: ${e.message}`, 'error');
+            }
+        });
+        
+        // ============================================
+        // History
+        // ============================================
+        async function loadHistory() {
+            try {
+                const response = await fetch('/history');
+                const data = await response.json();
+                
+                const container = document.getElementById('historyList');
+                
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 3v18h18"/>
+                            </svg>
+                            <p>No recent activity</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = data.slice(-10).reverse().map(item => `
+                    <div class="card-item">
+                        <div class="card-info">
+                            <span class="card-number">****${item.card_last4}</span>
+                            <span class="card-meta">${item.timestamp}</span>
+                        </div>
+                        ${item.success 
+                            ? `<span class="badge badge-success">${item.balance}</span>` 
+                            : item.is_duplicate 
+                                ? `<span class="badge badge-warning">Duplicate</span>`
+                                : `<span class="badge badge-destructive">Error</span>`
+                        }
+                    </div>
+                `).join('');
+                
+            } catch (e) {
+                console.error('Failed to load history:', e);
+            }
+        }
+        
+        document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
+            try {
+                await fetch('/clear_history', { method: 'POST' });
+                loadHistory();
+            } catch (e) {
+                console.error('Failed to clear history:', e);
+            }
+        });
+        
+        // ============================================
+        // Refresh All
+        // ============================================
+        document.getElementById('refreshAllBtn').addEventListener('click', () => {
+            loadStats();
+            loadCards();
+            loadNodes();
+            loadHistory();
+            addLog('Data refreshed', 'info');
+        });
+        
+        // ============================================
+        // Task Status & Cancel
+        // ============================================
+        async function pollStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                const taskBox = document.getElementById('currentTaskBox');
+                const taskName = document.getElementById('currentTaskName');
+                
+                if (data.running) {
+                    taskBox.classList.remove('hidden');
+                    taskBox.style.display = 'flex';
+                    taskName.textContent = data.current_task || 'Processing...';
+                } else {
+                    taskBox.classList.add('hidden');
+                    taskBox.style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Status poll error:', e);
+            }
+        }
+        
+        document.getElementById('cancelTaskBtn').addEventListener('click', async () => {
+            if (!confirm('Cancel current task?')) return;
+            
+            try {
+                const response = await fetch('/cancel', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog('Task cancellation requested', 'warning');
+                } else {
+                    addLog(data.message, 'info');
+                }
+            } catch (e) {
+                addLog(`Cancel error: ${e.message}`, 'error');
+            }
+        });
+        
+        // Poll status every 2 seconds
+        setInterval(pollStatus, 2000);
+        
+        // ============================================
+        // Initialize
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initLogStream();
+            loadStats();
+            loadCards();
+            loadNodes();
+            loadHistory();
+            pollStatus();
+            
+            // Load settings
+            fetch('/settings')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        settings = data.settings;
+                        document.getElementById('settingHeadless').checked = !settings.headless;
+                        document.getElementById('settingSkipDuplicates').checked = settings.skip_duplicates;
+                        document.getElementById('settingSkipChecked').checked = settings.skip_checked;
+                        document.getElementById('settingMaxRetries').value = settings.max_retries;
+                        document.getElementById('maxRetriesValue').textContent = settings.max_retries;
+                        document.getElementById('settingTimeout').value = settings.timeout / 1000;
+                        document.getElementById('timeoutValue').textContent = settings.timeout / 1000;
+                        // Update CAPTCHA mode UI
+                        updateCaptchaModeUI(settings.captcha_mode || 'auto');
+                        // Exit node settings
+                        document.getElementById('settingAlwaysUseExitNode').checked = settings.always_use_exit_node || false;
+                        document.getElementById('settingDisconnectAfterTask').checked = settings.disconnect_after_task || false;
+                        // Debug logging
+                        document.getElementById('settingDebugLogging').checked = settings.debug_logging || false;
+                        // Gemini settings
+                        const geminiKeys = settings.gemini_api_keys || [];
+                        document.getElementById('geminiApiKeys').value = geminiKeys.join('\n');
+                        document.getElementById('geminiModel').value = settings.gemini_model || 'gemini-2.0-flash';
+                        // Prompt preset and custom prompt
+                        document.getElementById('geminiPromptPreset').value = settings.gemini_prompt_preset || 'detailed';
+                        document.getElementById('geminiPrompt').value = settings.gemini_prompt || '';
+                        updatePresetUI();
+                        // Dynamic recheck mode (default true)
+                        document.getElementById('settingGeminiDynamicRecheck').checked = settings.gemini_dynamic_recheck !== false;
+                        // Debug save mode (default false)
+                        document.getElementById('settingGeminiDebugSave').checked = settings.gemini_debug_save || false;
+                        updateGeminiKeyStatus();
+                    }
+                });
+        });
+        
+        // =========================================
+        // PROMPTS MANAGER
+        // =========================================
+        
+        function openPromptsManager() {
+            const overlay = document.createElement('div');
+            overlay.id = 'promptsManagerOverlay';
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            
+            overlay.innerHTML = `
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 900px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0; font-size: 18px;">📝 Prompt Manager</h2>
+                        <button onclick="closePromptsManager()" style="background: none; border: none; color: var(--foreground); cursor: pointer; font-size: 20px;">&times;</button>
+                    </div>
+                    
+                    <div style="padding: 20px; overflow-y: auto; flex: 1;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                            <button class="btn btn-primary btn-sm" onclick="showNewPromptForm()">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                New Prompt
+                            </button>
+                            <button class="btn btn-ghost btn-sm" onclick="refreshPromptsList()">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                        
+                        <!-- New/Edit Prompt Form -->
+                        <div id="promptFormContainer" style="display: none; margin-bottom: 20px; padding: 16px; background: rgba(66, 133, 244, 0.1); border-radius: 8px; border: 1px solid rgba(66, 133, 244, 0.3);">
+                            <h3 style="margin: 0 0 16px 0; font-size: 14px;" id="promptFormTitle">New Prompt</h3>
+                            <input type="hidden" id="editPromptKey" value="">
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--muted-foreground);">Name (lowercase, no spaces)</label>
+                                <input type="text" class="input" id="newPromptKey" placeholder="my_custom_prompt" style="width: 100%;">
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--muted-foreground);">Display Name</label>
+                                <input type="text" class="input" id="newPromptName" placeholder="My Custom Prompt" style="width: 100%;">
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--muted-foreground);">Description</label>
+                                <input type="text" class="input" id="newPromptDesc" placeholder="A brief description of this prompt" style="width: 100%;">
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--muted-foreground);">Prompt Text</label>
+                                <textarea class="input" id="newPromptText" rows="10" placeholder="Enter your prompt here..." style="width: 100%; font-family: monospace; font-size: 12px;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-primary btn-sm" onclick="savePrompt()">Save Prompt</button>
+                                <button class="btn btn-ghost btn-sm" onclick="hidePromptForm()">Cancel</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Prompts List -->
+                        <div id="promptsList" style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="text-align: center; color: var(--muted-foreground); padding: 40px;">Loading prompts...</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closePromptsManager();
+            });
+            
+            refreshPromptsList();
+        }
+        
+        function closePromptsManager() {
+            const overlay = document.getElementById('promptsManagerOverlay');
+            if (overlay) overlay.remove();
+            // Refresh presets dropdown
+            loadPromptPresets();
+        }
+        
+        function showNewPromptForm() {
+            document.getElementById('promptFormContainer').style.display = 'block';
+            document.getElementById('promptFormTitle').textContent = 'New Prompt';
+            document.getElementById('editPromptKey').value = '';
+            document.getElementById('newPromptKey').value = '';
+            document.getElementById('newPromptKey').disabled = false;
+            document.getElementById('newPromptName').value = '';
+            document.getElementById('newPromptDesc').value = '';
+            document.getElementById('newPromptText').value = '';
+        }
+        
+        function hidePromptForm() {
+            document.getElementById('promptFormContainer').style.display = 'none';
+        }
+        
+        async function refreshPromptsList() {
+            const container = document.getElementById('promptsList');
+            container.innerHTML = '<div style="text-align: center; color: var(--muted-foreground); padding: 20px;">Loading...</div>';
+            
+            try {
+                const response = await fetch('/gemini/prompt_presets');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const presets = data.presets;
+                    const keys = Object.keys(presets).filter(k => k !== 'custom');
+                    
+                    if (keys.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; color: var(--muted-foreground); padding: 40px;">No prompts found. Create one!</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = keys.map(key => {
+                        const p = presets[key];
+                        const isBuiltin = ['detailed', 'simple', 'visual', 'expert'].includes(key);
+                        return `
+                            <div style="padding: 16px; background: var(--muted); border-radius: 8px; border: 1px solid var(--border);">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                    <div>
+                                        <span style="font-weight: 600;">${p.name}</span>
+                                        ${isBuiltin ? '<span style="font-size: 10px; background: rgba(66, 133, 244, 0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Built-in</span>' : '<span style="font-size: 10px; background: rgba(34, 197, 94, 0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Custom</span>'}
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                        <button class="btn btn-ghost btn-sm" onclick="viewPrompt('${key}')" title="View">
+                                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </button>
+                                        ${!isBuiltin ? `
+                                            <button class="btn btn-ghost btn-sm" onclick="editPrompt('${key}')" title="Edit">
+                                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                </svg>
+                                            </button>
+                                            <button class="btn btn-ghost btn-sm" onclick="deletePrompt('${key}')" title="Delete" style="color: var(--destructive);">
+                                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                </svg>
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div style="font-size: 12px; color: var(--muted-foreground);">${p.description || 'No description'}</div>
+                                <div style="font-size: 11px; color: var(--muted-foreground); margin-top: 8px; font-family: monospace; max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
+                                    ${(p.full_prompt || '').substring(0, 150)}...
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                container.innerHTML = '<div style="text-align: center; color: var(--destructive); padding: 20px;">Error loading prompts</div>';
+            }
+        }
+        
+        async function viewPrompt(key) {
+            try {
+                const response = await fetch('/gemini/prompt_presets');
+                const data = await response.json();
+                if (data.success && data.presets[key]) {
+                    const p = data.presets[key];
+                    alert(`📋 ${p.name}\n\n${p.description}\n\n${'─'.repeat(40)}\n\n${p.full_prompt}`);
+                }
+            } catch (e) {
+                showToast('Error', 'Could not load prompt', 'error');
+            }
+        }
+        
+        async function editPrompt(key) {
+            try {
+                const response = await fetch('/gemini/prompt_presets');
+                const data = await response.json();
+                if (data.success && data.presets[key]) {
+                    const p = data.presets[key];
+                    document.getElementById('promptFormContainer').style.display = 'block';
+                    document.getElementById('promptFormTitle').textContent = 'Edit Prompt';
+                    document.getElementById('editPromptKey').value = key;
+                    document.getElementById('newPromptKey').value = key;
+                    document.getElementById('newPromptKey').disabled = true;
+                    document.getElementById('newPromptName').value = p.name;
+                    document.getElementById('newPromptDesc').value = p.description || '';
+                    document.getElementById('newPromptText').value = p.full_prompt || '';
+                }
+            } catch (e) {
+                showToast('Error', 'Could not load prompt for editing', 'error');
+            }
+        }
+        
+        async function savePrompt() {
+            const editKey = document.getElementById('editPromptKey').value;
+            const key = editKey || document.getElementById('newPromptKey').value.trim().toLowerCase().replace(/\s+/g, '_');
+            const name = document.getElementById('newPromptName').value.trim();
+            const description = document.getElementById('newPromptDesc').value.trim();
+            const prompt = document.getElementById('newPromptText').value.trim();
+            
+            if (!key || !name || !prompt) {
+                showToast('Error', 'Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Check if it's a builtin prompt
+            if (['detailed', 'simple', 'visual', 'expert', 'custom'].includes(key) && !editKey) {
+                showToast('Error', 'Cannot use reserved prompt names', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/gemini/prompts/' + key, {
+                    method: editKey ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description, prompt })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Success', editKey ? 'Prompt updated' : 'Prompt created', 'success');
+                    hidePromptForm();
+                    refreshPromptsList();
+                    loadPromptPresets();
+                } else {
+                    showToast('Error', data.error || 'Failed to save prompt', 'error');
+                }
+            } catch (e) {
+                showToast('Error', 'Failed to save prompt', 'error');
+            }
+        }
+        
+        async function deletePrompt(key) {
+            if (!confirm(`Are you sure you want to delete the prompt "${key}"?`)) return;
+            
+            try {
+                const response = await fetch('/gemini/prompts/' + key, { method: 'DELETE' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Success', 'Prompt deleted', 'success');
+                    refreshPromptsList();
+                    loadPromptPresets();
+                } else {
+                    showToast('Error', data.error || 'Failed to delete prompt', 'error');
+                }
+            } catch (e) {
+                showToast('Error', 'Failed to delete prompt', 'error');
+            }
+        }
+        
+        // =========================================
+        // PROMPT STATISTICS
+        // =========================================
+        
+        function openPromptStats() {
+            const overlay = document.createElement('div');
+            overlay.id = 'promptStatsOverlay';
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            
+            overlay.innerHTML = `
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 700px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0; font-size: 18px;">📊 Prompt Statistics</h2>
+                        <button onclick="closePromptStats()" style="background: none; border: none; color: var(--foreground); cursor: pointer; font-size: 20px;">&times;</button>
+                    </div>
+                    
+                    <div style="padding: 20px; overflow-y: auto; flex: 1;">
+                        <div id="promptStatsContent" style="display: flex; flex-direction: column; gap: 16px;">
+                            <div style="text-align: center; color: var(--muted-foreground); padding: 40px;">Loading statistics...</div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+                            <button class="btn btn-ghost btn-sm" onclick="resetPromptStats()" style="color: var(--destructive);">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                                Reset All Statistics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closePromptStats();
+            });
+            
+            loadPromptStats();
+        }
+        
+        function closePromptStats() {
+            const overlay = document.getElementById('promptStatsOverlay');
+            if (overlay) overlay.remove();
+        }
+        
+        async function loadPromptStats() {
+            const container = document.getElementById('promptStatsContent');
+            
+            try {
+                const response = await fetch('/gemini/prompt_stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.stats;
+                    
+                    if (stats.total_attempts === 0) {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px; color: var(--muted-foreground);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 12px; opacity: 0.5;">
+                                    <path d="M18 20V10"/>
+                                    <path d="M12 20V4"/>
+                                    <path d="M6 20v-6"/>
+                                </svg>
+                                <div>No statistics yet</div>
+                                <div style="font-size: 12px; margin-top: 4px;">Statistics will appear after CAPTCHA solving attempts</div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Overall stats
+                    let html = `
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;">
+                            <div style="flex: 1; min-width: 120px; text-align: center; padding: 16px; background: var(--muted); border-radius: 8px;">
+                                <div style="font-size: 28px; font-weight: 700;">${stats.total_attempts}</div>
+                                <div style="font-size: 12px; color: var(--muted-foreground);">Total Attempts</div>
+                            </div>
+                            <div style="flex: 1; min-width: 120px; text-align: center; padding: 16px; background: rgba(34, 197, 94, 0.1); border-radius: 8px;">
+                                <div style="font-size: 28px; font-weight: 700; color: #22c55e;">${stats.total_successes}</div>
+                                <div style="font-size: 12px; color: var(--muted-foreground);">Successes</div>
+                            </div>
+                            <div style="flex: 1; min-width: 120px; text-align: center; padding: 16px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                                <div style="font-size: 28px; font-weight: 700; color: #3b82f6;">${stats.overall_success_rate || 0}%</div>
+                                <div style="font-size: 12px; color: var(--muted-foreground);">Success Rate</div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="font-size: 14px; margin-bottom: 12px;">Prompt Rankings</h3>
+                    `;
+                    
+                    // Ranking by success rate
+                    if (stats.ranking && stats.ranking.length > 0) {
+                        html += stats.ranking.map((p, i) => {
+                            const barWidth = Math.max(p.success_rate, 5);
+                            const barColor = p.success_rate >= 70 ? '#22c55e' : p.success_rate >= 40 ? '#eab308' : '#ef4444';
+                            return `
+                                <div style="padding: 12px; background: var(--muted); border-radius: 8px; margin-bottom: 8px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div>
+                                            <span style="font-weight: 600;">#${i + 1} ${p.name}</span>
+                                            ${stats.current_preset === p.name ? '<span style="font-size: 10px; background: rgba(66, 133, 244, 0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Active</span>' : ''}
+                                        </div>
+                                        <span style="font-weight: 700; color: ${barColor};">${p.success_rate}%</span>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.1); border-radius: 4px; height: 8px; overflow: hidden;">
+                                        <div style="width: ${barWidth}%; height: 100%; background: ${barColor}; border-radius: 4px;"></div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted-foreground); margin-top: 6px;">
+                                        <span>${p.attempts} attempts</span>
+                                        <span>${p.successes} successes / ${p.failures} failures</span>
+                                        <span>~${(p.avg_tiles_selected || 0).toFixed(1)} tiles/attempt</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        html += '<div style="text-align: center; color: var(--muted-foreground); padding: 20px;">No prompt data available</div>';
+                    }
+                    
+                    container.innerHTML = html;
+                }
+            } catch (e) {
+                container.innerHTML = '<div style="text-align: center; color: var(--destructive); padding: 20px;">Error loading statistics</div>';
+            }
+        }
+        
+        async function resetPromptStats() {
+            if (!confirm('Are you sure you want to reset all prompt statistics?')) return;
+            
+            try {
+                const response = await fetch('/gemini/prompt_stats/reset', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Success', 'Statistics reset', 'success');
+                    loadPromptStats();
+                } else {
+                    showToast('Error', data.error || 'Failed to reset statistics', 'error');
+                }
+            } catch (e) {
+                showToast('Error', 'Failed to reset statistics', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

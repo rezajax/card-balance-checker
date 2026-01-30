@@ -1,0 +1,24 @@
+# Browser Automation Dependencies
+playwright>=1.40.0
+flask>=3.0.0
+python-dotenv>=1.0.0
+
+# AI CAPTCHA Solver Dependencies (optional but recommended)
+# Uses YOLO vision model trained on 57k reCAPTCHA images
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+aiohttp>=3.9.0
+huggingface_hub>=0.20.0
+
+# ONNX Runtime for AI model inference
+onnx>=1.15.0
+onnxruntime-gpu>=1.17.0
+
+# Google Sheets integration
+gspread>=6.0.0
+google-auth>=2.0.0
+
+# Gemini AI CAPTCHA Solver
+requests>=2.31.0
+google-generativeai>=0.8.0
+Pillow>=10.0.0

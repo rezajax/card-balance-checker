@@ -1,0 +1,30 @@
+{
+  "headless": false,
+  "max_retries": 5,
+  "skip_duplicates": true,
+  "skip_checked": true,
+  "timeout": 60000,
+  "auto_check_interval": 0,
+  "captcha_mode": "gemini",
+  "always_use_exit_node": true,
+  "disconnect_after_task": true,
+  "debug_logging": true,
+  "gemini_api_keys": [
+    "AIzaSyC7idW9KWmdgQEZQbB1vnYvkZ6JzdeiBIU",
+    "AIzaSyDTsb_1xptMo98EqeJkUPMAJNb3B-QE35E",
+    "AIzaSyCbvKl3NMPnJi9Ew-3Ye-z_5Dm9nr8bVJs",
+    "AIzaSyDvFpzv90ErITkxtJmXxi-0EkZFnpTM320",
+    "AIzaSyAfVukDb0p-rj1_5tTZaaaWlbuauyNIWxs",
+    "AIzaSyClEENc05XAnSt6EQJkFjxYXrkSoHtWysY",
+    "AIzaSyB4uWYIBFTePB4b_siuv2f_3Vdps7OPUNA",
+    "AIzaSyDUKGEsyGWeCcIcPP9LLHfh78cyenbRBPA",
+    "AIzaSyCgsVqryPDLPwG3jeVAmwUmon6dHI4aAsU"
+  ],
+  "gemini_current_key_index": 0,
+  "gemini_model": "gemini-2.5-flash",
+  "gemini_dynamic_recheck": true,
+  "gemini_debug_save": true,
+  "gemini_prompt_preset": "expert",
+  "gemini_prompt": "",
+  "custom_prompts": []
+}
