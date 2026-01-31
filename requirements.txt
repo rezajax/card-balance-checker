@@ -26,3 +26,6 @@ google-auth>=2.0.0
 requests>=2.31.0
 google-generativeai>=0.8.0
 Pillow>=10.0.0
+
+# Phone Automation (ADB + scrcpy)
+rich>=13.0.0  # For beautiful terminal UI

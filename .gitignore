@@ -30,6 +30,10 @@ captcha_debug/
 # Screenshots and results
 screenshots/
 results/
+card_check_*.png
+
+# Downloaded files
+downloaded_files/
 
 # OS files
 .DS_Store

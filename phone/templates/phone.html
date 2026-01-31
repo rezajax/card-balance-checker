@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Automation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: #09090b;
+            --foreground: #fafafa;
+            --card: #0a0a0c;
+            --card-foreground: #fafafa;
+            --border: #27272a;
+            --input: #27272a;
+            --primary: #fafafa;
+            --primary-foreground: #18181b;
+            --secondary: #27272a;
+            --muted: #27272a;
+            --muted-foreground: #a1a1aa;
+            --accent: #27272a;
+            --destructive: #7f1d1d;
+            --ring: #d4d4d8;
+            --radius: 6px;
+            --success: #22c55e;
+            --warning: #eab308;
+            --info: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .app {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            gap: 1px;
+            background: var(--border);
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: var(--card);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .logo svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 500;
+            background: var(--secondary);
+        }
+
+        .status-badge.online {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* URL Bar */
+        .url-bar {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            max-width: 600px;
+        }
+
+        .input {
+            flex: 1;
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 6px 12px;
+            color: var(--foreground);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .input:focus {
+            border-color: var(--ring);
+        }
+
+        .input::placeholder {
+            color: var(--muted-foreground);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--foreground);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted-foreground);
+        }
+
+        .btn-ghost:hover {
+            background: var(--secondary);
+            color: var(--foreground);
+        }
+
+        .btn-icon {
+            padding: 6px;
+            min-width: 32px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        /* Main Content */
+        .main {
+            background: var(--card);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            padding: 0 12px;
+        }
+
+        .tab {
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted-foreground);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.15s;
+        }
+
+        .tab:hover {
+            color: var(--foreground);
+        }
+
+        .tab.active {
+            color: var(--foreground);
+            border-bottom-color: var(--foreground);
+        }
+
+        /* Log Panel */
+        .log-panel {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-filters {
+            display: flex;
+            gap: 2px;
+        }
+
+        .filter-btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            background: transparent;
+            border: none;
+            color: var(--muted-foreground);
+            cursor: pointer;
+        }
+
+        .filter-btn:hover {
+            background: var(--secondary);
+        }
+
+        .filter-btn.active {
+            background: var(--secondary);
+            color: var(--foreground);
+        }
+
+        .log-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 11px;
+        }
+
+        .log-entry {
+            display: flex;
+            padding: 2px 12px;
+            gap: 8px;
+            border-left: 2px solid transparent;
+        }
+
+        .log-entry:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .log-entry .time {
+            color: var(--muted-foreground);
+            min-width: 65px;
+        }
+
+        .log-entry .type {
+            min-width: 55px;
+            font-weight: 500;
+        }
+
+        .log-entry .msg {
+            color: var(--muted-foreground);
+            word-break: break-word;
+        }
+
+        .log-entry.ADB { border-left-color: var(--info); }
+        .log-entry.ADB .type { color: var(--info); }
+
+        .log-entry.PHONE { border-left-color: #a855f7; }
+        .log-entry.PHONE .type { color: #a855f7; }
+
+        .log-entry.BROWSER { border-left-color: #06b6d4; }
+        .log-entry.BROWSER .type { color: #06b6d4; }
+
+        .log-entry.SCRCPY { border-left-color: var(--success); }
+        .log-entry.SCRCPY .type { color: var(--success); }
+
+        .log-entry.ERROR { border-left-color: #ef4444; background: rgba(239,68,68,0.05); }
+        .log-entry.ERROR .type { color: #ef4444; }
+
+        /* Sidebar - Phone */
+        .sidebar {
+            background: var(--card);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .device-info {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .device-info span {
+            color: var(--muted-foreground);
+            font-weight: 400;
+        }
+
+        /* Phone Frame */
+        .phone-container {
+            flex: 1;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .phone-frame {
+            flex: 1;
+            background: #000;
+            border-radius: 24px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            position: relative;
+        }
+
+        .phone-notch {
+            width: 60px;
+            height: 18px;
+            background: #000;
+            border-radius: 0 0 12px 12px;
+            margin: 0 auto 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .phone-screen {
+            flex: 1;
+            background: #111;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .phone-screen img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .phone-screen .loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted-foreground);
+            font-size: 11px;
+        }
+
+        /* Phone Controls */
+        .phone-controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+
+        .ctrl-btn {
+            padding: 8px;
+            background: var(--secondary);
+            border: none;
+            border-radius: var(--radius);
+            color: var(--foreground);
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .ctrl-btn:hover {
+            background: var(--accent);
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Screen Data Panel */
+        .screen-data {
+            padding: 8px 12px;
+            border-top: 1px solid var(--border);
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .screen-data-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted-foreground);
+            margin-bottom: 6px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            font-size: 11px;
+        }
+
+        .data-row .key {
+            color: var(--muted-foreground);
+        }
+
+        .data-row .value {
+            color: var(--foreground);
+            font-family: 'SF Mono', monospace;
+        }
+
+        /* Text Input Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            width: 400px;
+            max-width: 90vw;
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .modal-input {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--muted-foreground);
+        }
+
+        /* Keyboard shortcuts hint */
+        .kbd {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 5px;
+            font-size: 10px;
+            font-family: 'SF Mono', monospace;
+            background: var(--secondary);
+            border-radius: 3px;
+            color: var(--muted-foreground);
+        }
+
+        /* Card Checker Styles */
+        .card-checker {
+            max-width: 500px;
+        }
+
+        .card-form {
+            background: var(--secondary);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--muted-foreground);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group .input {
+            width: 100%;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+        }
+
+        .check-status {
+            background: var(--secondary);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: var(--info);
+        }
+
+        .status-percent {
+            font-family: 'SF Mono', monospace;
+            font-size: 12px;
+            color: var(--muted-foreground);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--info);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .status-message {
+            font-size: 12px;
+            color: var(--muted-foreground);
+        }
+
+        .check-result {
+            background: var(--secondary);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .check-result.success {
+            border: 1px solid var(--success);
+        }
+
+        .check-result.error {
+            border: 1px solid #ef4444;
+        }
+
+        .result-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .result-balance {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 8px;
+        }
+
+        .check-result.error .result-balance {
+            color: #ef4444;
+            font-size: 14px;
+        }
+
+        .result-message {
+            font-size: 12px;
+            color: var(--muted-foreground);
+            margin-bottom: 4px;
+        }
+
+        .result-date {
+            font-size: 10px;
+            color: var(--muted-foreground);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                    <line x1="12" y1="18" x2="12" y2="18"/>
+                </svg>
+                <span>Phone Automation</span>
+            </div>
+            
+            <div class="status-badge online" id="statusBadge">
+                <span class="status-dot"></span>
+                <span id="statusText">Connected</span>
+            </div>
+            
+            <div class="url-bar">
+                <input type="text" class="input" id="urlInput" placeholder="Enter URL..." value="https://browserleaks.com">
+                <button class="btn btn-primary" onclick="openUrl()">Go</button>
+            </div>
+            
+            <div class="quick-actions">
+                <button class="btn btn-secondary" onclick="openUrl('https://browserleaks.com/ip')">IP</button>
+                <button class="btn btn-secondary" onclick="openUrl('https://whoer.net')">Whoer</button>
+                <button class="btn btn-secondary" onclick="openUrl('https://iphey.com')">IPHey</button>
+                <button class="btn btn-ghost btn-icon" onclick="refreshScreen()" title="Refresh">⟳</button>
+                <button class="btn btn-ghost btn-icon" onclick="getScreenData()" title="Read Screen">◉</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="tabs">
+                <div class="tab active" data-tab="logs">Logs</div>
+                <div class="tab" data-tab="card">Card Check</div>
+                <div class="tab" data-tab="screen">Screen Data</div>
+                <div class="tab" data-tab="elements">Elements</div>
+            </div>
+            
+            <div class="log-panel" id="logPanel">
+                <div class="log-header">
+                    <div class="log-filters">
+                        <button class="filter-btn active" data-filter="ALL">All</button>
+                        <button class="filter-btn" data-filter="ADB">ADB</button>
+                        <button class="filter-btn" data-filter="PHONE">Phone</button>
+                        <button class="filter-btn" data-filter="BROWSER">Browser</button>
+                        <button class="filter-btn" data-filter="SCRCPY">Scrcpy</button>
+                    </div>
+                    <button class="btn btn-ghost" onclick="clearLogs()" style="font-size:11px;">Clear</button>
+                </div>
+                <div class="log-content" id="logContent"></div>
+            </div>
+            
+            <!-- Card Check Panel -->
+            <div id="cardPanel" style="display:none; padding:16px; overflow:auto;">
+                <div class="card-checker">
+                    <div class="card-form">
+                        <div class="form-group">
+                            <label>Card Number</label>
+                            <input type="text" class="input" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Exp Month</label>
+                                <input type="text" class="input" id="expMonth" placeholder="MM" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label>Exp Year</label>
+                                <input type="text" class="input" id="expYear" placeholder="YY" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <input type="text" class="input" id="cvv" placeholder="123" maxlength="4">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-secondary" onclick="openCardSite()">Open Site</button>
+                            <button class="btn btn-primary" id="checkBtn" onclick="checkCard()">Check Balance</button>
+                            <button class="btn btn-ghost" id="cancelBtn" onclick="cancelCheck()" style="display:none;">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <div class="check-status" id="checkStatus" style="display:none;">
+                        <div class="status-header">
+                            <span class="status-label" id="statusLabel">Checking...</span>
+                            <span class="status-percent" id="statusPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <div class="status-message" id="statusMessage">Starting...</div>
+                    </div>
+                    
+                    <div class="check-result" id="checkResult" style="display:none;">
+                        <div class="result-icon" id="resultIcon">💰</div>
+                        <div class="result-balance" id="resultBalance">$0.00</div>
+                        <div class="result-message" id="resultMessage">Balance retrieved successfully</div>
+                        <div class="result-date" id="resultDate"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="screenDataPanel" style="display:none; padding:12px; overflow:auto;">
+                <pre id="screenDataContent" style="font-size:11px; color:var(--muted-foreground);"></pre>
+            </div>
+            
+            <div id="elementsPanel" style="display:none; padding:12px; overflow:auto;">
+                <div id="elementsContent"></div>
+            </div>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="device-info">
+                    <span id="deviceModel">Loading...</span>
+                </div>
+                <span class="kbd" title="Press T to type">T</span>
+            </div>
+            
+            <div class="phone-container">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen" id="phoneScreen">
+                        <img id="screenImage" src="" alt="" draggable="false">
+                        <div class="loading" id="screenLoading">Loading...</div>
+                    </div>
+                </div>
+                
+                <div class="phone-controls">
+                    <button class="ctrl-btn" onclick="pressKey('back')" title="Back">←</button>
+                    <button class="ctrl-btn" onclick="pressKey('home')" title="Home">○</button>
+                    <button class="ctrl-btn" onclick="pressKey('app_switch')" title="Recent">□</button>
+                    <button class="ctrl-btn" onclick="pressKey('menu')" title="Menu">≡</button>
+                    <button class="ctrl-btn" onclick="scroll('up')">↑</button>
+                    <button class="ctrl-btn" onclick="scroll('down')">↓</button>
+                    <button class="ctrl-btn" onclick="pressKey('volume_up')">+</button>
+                    <button class="ctrl-btn" onclick="pressKey('volume_down')">−</button>
+                </div>
+            </div>
+            
+            <div class="screen-data" id="quickData">
+                <div class="screen-data-title">Quick Info</div>
+                <div id="quickDataContent">
+                    <div class="data-row"><span class="key">Status</span><span class="value">-</span></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Text Input Modal -->
+    <div class="modal-overlay" id="textModal">
+        <div class="modal">
+            <div class="modal-title">Type Text</div>
+            <input type="text" class="input modal-input" id="textInput" placeholder="Enter text...">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideTextModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="sendText()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentFilter = 'ALL';
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0, time: 0 };
+        const PHONE = { width: 1080, height: 2400 };
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStatus();
+            startLogStream();
+            startScreenRefresh();
+            setupInteractions();
+            setupKeyboard();
+            setupTabs();
+            setupFilters();
+            
+            document.getElementById('urlInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') openUrl();
+            });
+            
+            document.getElementById('textInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') sendText();
+                if (e.key === 'Escape') hideTextModal();
+            });
+        });
+
+        // Tabs
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tabName = tab.dataset.tab;
+                    document.getElementById('logPanel').style.display = tabName === 'logs' ? 'flex' : 'none';
+                    document.getElementById('cardPanel').style.display = tabName === 'card' ? 'block' : 'none';
+                    document.getElementById('screenDataPanel').style.display = tabName === 'screen' ? 'block' : 'none';
+                    document.getElementById('elementsPanel').style.display = tabName === 'elements' ? 'block' : 'none';
+                });
+            });
+        }
+
+        // Filters
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    loadLogs();
+                });
+            });
+        }
+
+        // Status
+        async function loadStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                
+                if (data.initialized) {
+                    document.getElementById('statusBadge').classList.add('online');
+                    document.getElementById('statusText').textContent = 'Connected';
+                    document.getElementById('deviceModel').textContent = 
+                        `${data.device.brand} ${data.device.model}`;
+                    
+                    // Quick data
+                    document.getElementById('quickDataContent').innerHTML = `
+                        <div class="data-row"><span class="key">Android</span><span class="value">${data.device.android_version}</span></div>
+                        <div class="data-row"><span class="key">SDK</span><span class="value">${data.device.sdk_version}</span></div>
+                        <div class="data-row"><span class="key">Serial</span><span class="value">${data.device_serial?.slice(0,8)}...</span></div>
+                    `;
+                }
+            } catch (e) {
+                document.getElementById('statusText').textContent = 'Disconnected';
+            }
+        }
+
+        // Logs
+        let logsSSE = null;
+        function startLogStream() {
+            if (logsSSE) logsSSE.close();
+            
+            logsSSE = new EventSource('/api/logs/stream');
+            logsSSE.onmessage = e => addLog(JSON.parse(e.data));
+            logsSSE.onerror = () => setTimeout(startLogStream, 3000);
+            
+            loadLogs();
+        }
+
+        async function loadLogs() {
+            try {
+                const res = await fetch('/api/logs');
+                const logs = await res.json();
+                document.getElementById('logContent').innerHTML = '';
+                logs.forEach(addLog);
+            } catch (e) {}
+        }
+
+        function addLog(log) {
+            if (currentFilter !== 'ALL' && log.type !== currentFilter) return;
+            
+            const el = document.createElement('div');
+            const cls = log.level === 'ERROR' ? 'ERROR' : log.type;
+            el.className = `log-entry ${cls}`;
+            
+            const time = log.timestamp?.split('T')[1]?.slice(0,8) || '--:--:--';
+            el.innerHTML = `
+                <span class="time">${time}</span>
+                <span class="type">${log.type}</span>
+                <span class="msg">${escapeHtml(log.message)}</span>
+            `;
+            
+            const container = document.getElementById('logContent');
+            container.appendChild(el);
+            container.scrollTop = container.scrollHeight;
+            
+            while (container.children.length > 200) container.removeChild(container.firstChild);
+        }
+
+        function clearLogs() {
+            document.getElementById('logContent').innerHTML = '';
+        }
+
+        function escapeHtml(t) {
+            const d = document.createElement('div');
+            d.textContent = t;
+            return d.innerHTML;
+        }
+
+        // Screen
+        let screenInterval = null;
+        function startScreenRefresh() {
+            refreshScreen();
+            screenInterval = setInterval(refreshScreen, 1200);
+        }
+
+        async function refreshScreen() {
+            try {
+                const res = await fetch('/api/screenshot');
+                const data = await res.json();
+                if (data.image) {
+                    document.getElementById('screenImage').src = data.image;
+                    document.getElementById('screenLoading').style.display = 'none';
+                }
+            } catch (e) {}
+        }
+
+        // Screen Interactions
+        function setupInteractions() {
+            const screen = document.getElementById('phoneScreen');
+            const img = document.getElementById('screenImage');
+            
+            img.addEventListener('mousedown', e => {
+                e.preventDefault();
+                isDragging = true;
+                dragStart = { x: e.clientX, y: e.clientY, time: Date.now() };
+            });
+            
+            img.addEventListener('mousemove', e => {
+                // Could show drag indicator
+            });
+            
+            img.addEventListener('mouseup', e => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                const dx = e.clientX - dragStart.x;
+                const dy = e.clientY - dragStart.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 10) {
+                    // Tap
+                    const coords = screenToPhone(e);
+                    tap(coords.x, coords.y);
+                } else if (dist > 30) {
+                    // Swipe
+                    const start = screenToPhone({ clientX: dragStart.x, clientY: dragStart.y, target: img });
+                    const end = screenToPhone(e);
+                    swipe(start.x, start.y, end.x, end.y);
+                }
+            });
+            
+            img.addEventListener('wheel', e => {
+                e.preventDefault();
+                scroll(e.deltaY > 0 ? 'down' : 'up', 400);
+            });
+            
+            img.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                pressKey('back');
+            });
+        }
+
+        function screenToPhone(e) {
+            const img = e.target || document.getElementById('screenImage');
+            const rect = img.getBoundingClientRect();
+            const x = Math.round(((e.clientX - rect.left) / rect.width) * PHONE.width);
+            const y = Math.round(((e.clientY - rect.top) / rect.height) * PHONE.height);
+            return { x: Math.max(0, Math.min(PHONE.width, x)), y: Math.max(0, Math.min(PHONE.height, y)) };
+        }
+
+        // Keyboard
+        function setupKeyboard() {
+            document.addEventListener('keydown', e => {
+                if (e.target.tagName === 'INPUT') return;
+                
+                switch(e.key.toLowerCase()) {
+                    case 't': showTextModal(); break;
+                    case 'r': refreshScreen(); break;
+                    case 'h': pressKey('home'); break;
+                    case 'b': case 'backspace': pressKey('back'); e.preventDefault(); break;
+                    case 'arrowup': scroll('up'); e.preventDefault(); break;
+                    case 'arrowdown': scroll('down'); e.preventDefault(); break;
+                }
+            });
+        }
+
+        // Text Modal
+        function showTextModal() {
+            document.getElementById('textModal').classList.add('show');
+            document.getElementById('textInput').focus();
+        }
+
+        function hideTextModal() {
+            document.getElementById('textModal').classList.remove('show');
+            document.getElementById('textInput').value = '';
+        }
+
+        async function sendText() {
+            const text = document.getElementById('textInput').value;
+            if (!text) return;
+            
+            try {
+                await fetch('/api/input', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                hideTextModal();
+                setTimeout(refreshScreen, 300);
+            } catch (e) {}
+        }
+
+        // API calls
+        async function tap(x, y) {
+            try {
+                await fetch('/api/tap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ x, y })
+                });
+                setTimeout(refreshScreen, 300);
+            } catch (e) {}
+        }
+
+        async function swipe(x1, y1, x2, y2) {
+            try {
+                await fetch('/api/swipe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ x1, y1, x2, y2, duration: 300 })
+                });
+                setTimeout(refreshScreen, 300);
+            } catch (e) {}
+        }
+
+        async function scroll(dir, amt = 500) {
+            try {
+                await fetch('/api/scroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ direction: dir, amount: amt })
+                });
+                setTimeout(refreshScreen, 300);
+            } catch (e) {}
+        }
+
+        async function pressKey(key) {
+            try {
+                await fetch('/api/key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key })
+                });
+                setTimeout(refreshScreen, 300);
+            } catch (e) {}
+        }
+
+        async function openUrl(url) {
+            url = url || document.getElementById('urlInput').value.trim();
+            if (!url) return;
+            if (!url.startsWith('http')) url = 'https://' + url;
+            
+            try {
+                await fetch('/api/open_url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                setTimeout(refreshScreen, 2000);
+            } catch (e) {}
+        }
+
+        async function getScreenData() {
+            try {
+                const res = await fetch('/api/screen/info');
+                const data = await res.json();
+                
+                document.getElementById('screenDataContent').textContent = JSON.stringify(data, null, 2);
+                
+                // Show elements
+                let html = '';
+                if (data.clickable_texts) {
+                    html = data.clickable_texts.map(t => 
+                        `<div class="data-row" style="cursor:pointer;" onclick="tapText('${t}')">
+                            <span class="key">→</span>
+                            <span class="value">${t}</span>
+                        </div>`
+                    ).join('');
+                }
+                document.getElementById('elementsContent').innerHTML = html || 'No elements';
+                
+                // Switch to screen tab
+                document.querySelector('.tab[data-tab="screen"]').click();
+            } catch (e) {}
+        }
+
+        async function tapText(text) {
+            try {
+                await fetch('/api/screen/tap_text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                setTimeout(refreshScreen, 500);
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // Card Checker Functions
+        // ==========================================
+        
+        let checkStatusInterval = null;
+
+        // Format card number as user types
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+            let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formatted.slice(0, 19);
+        });
+
+        // Only allow numbers for other fields
+        ['expMonth', 'expYear', 'cvv'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        });
+
+        async function openCardSite() {
+            try {
+                await fetch('/api/card/open_site', { method: 'POST' });
+                setTimeout(refreshScreen, 2000);
+            } catch (e) {
+                console.error('Failed to open card site:', e);
+            }
+        }
+
+        async function checkCard() {
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const expMonth = document.getElementById('expMonth').value;
+            const expYear = document.getElementById('expYear').value;
+            const cvv = document.getElementById('cvv').value;
+
+            // Validation
+            if (!cardNumber || cardNumber.length < 15) {
+                alert('Please enter a valid card number');
+                return;
+            }
+            if (!expMonth || !expYear || !cvv) {
+                alert('Please fill all card information');
+                return;
+            }
+
+            // Show status, hide result
+            document.getElementById('checkStatus').style.display = 'block';
+            document.getElementById('checkResult').style.display = 'none';
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'block';
+
+            try {
+                const res = await fetch('/api/card/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        card_number: cardNumber,
+                        exp_month: expMonth,
+                        exp_year: expYear,
+                        cvv: cvv
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    showCheckError(data.error || 'Failed to start check');
+                    return;
+                }
+
+                // Start polling for status
+                startStatusPolling();
+
+            } catch (e) {
+                showCheckError('Network error: ' + e.message);
+            }
+        }
+
+        function startStatusPolling() {
+            if (checkStatusInterval) clearInterval(checkStatusInterval);
+            
+            checkStatusInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/card/status');
+                    const data = await res.json();
+                    
+                    updateStatusDisplay(data);
+                    
+                    // Check if completed or failed
+                    if (['completed', 'failed', 'cancelled'].includes(data.status)) {
+                        stopStatusPolling();
+                        showResult(data);
+                    }
+                } catch (e) {
+                    console.error('Status poll error:', e);
+                }
+            }, 1000);
+        }
+
+        function stopStatusPolling() {
+            if (checkStatusInterval) {
+                clearInterval(checkStatusInterval);
+                checkStatusInterval = null;
+            }
+            document.getElementById('checkBtn').style.display = 'block';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        function updateStatusDisplay(data) {
+            document.getElementById('statusLabel').textContent = 
+                data.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            document.getElementById('statusPercent').textContent = data.progress + '%';
+            document.getElementById('progressFill').style.width = data.progress + '%';
+            document.getElementById('statusMessage').textContent = data.message || '...';
+        }
+
+        function showResult(data) {
+            document.getElementById('checkStatus').style.display = 'none';
+            
+            const resultEl = document.getElementById('checkResult');
+            resultEl.style.display = 'block';
+            
+            if (data.status === 'completed' && data.result?.success) {
+                resultEl.className = 'check-result success';
+                document.getElementById('resultIcon').textContent = '💰';
+                document.getElementById('resultBalance').textContent = data.result.balance || '$0.00';
+                document.getElementById('resultMessage').textContent = 'Balance retrieved successfully';
+            } else if (data.status === 'cancelled') {
+                resultEl.className = 'check-result';
+                document.getElementById('resultIcon').textContent = '⚠️';
+                document.getElementById('resultBalance').textContent = 'Cancelled';
+                document.getElementById('resultMessage').textContent = 'Check was cancelled';
+            } else {
+                resultEl.className = 'check-result error';
+                document.getElementById('resultIcon').textContent = '❌';
+                document.getElementById('resultBalance').textContent = data.result?.error || data.message || 'Check failed';
+                document.getElementById('resultMessage').textContent = 'Could not retrieve balance';
+            }
+            
+            document.getElementById('resultDate').textContent = 
+                new Date().toLocaleString();
+        }
+
+        function showCheckError(message) {
+            document.getElementById('checkStatus').style.display = 'none';
+            stopStatusPolling();
+            
+            const resultEl = document.getElementById('checkResult');
+            resultEl.style.display = 'block';
+            resultEl.className = 'check-result error';
+            document.getElementById('resultIcon').textContent = '❌';
+            document.getElementById('resultBalance').textContent = message;
+            document.getElementById('resultMessage').textContent = 'Error occurred';
+            document.getElementById('resultDate').textContent = new Date().toLocaleString();
+        }
+
+        async function cancelCheck() {
+            try {
+                await fetch('/api/card/cancel', { method: 'POST' });
+                stopStatusPolling();
+            } catch (e) {
+                console.error('Failed to cancel:', e);
+            }
+        }
+    </script>
+</body>
+</html>
