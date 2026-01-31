@@ -3,6 +3,10 @@ playwright>=1.40.0
 flask>=3.0.0
 python-dotenv>=1.0.0
 
+# Stealth Browser Automation (Anti-Detection)
+seleniumbase>=4.32.0
+undetected-chromedriver>=3.5.5
+
 # AI CAPTCHA Solver Dependencies (optional but recommended)
 # Uses YOLO vision model trained on 57k reCAPTCHA images
 ultralytics>=8.0.0

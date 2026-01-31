@@ -17,6 +17,142 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# ============================================
+# Browser Profiles for Anti-Detection
+# ============================================
+# These profiles help reduce CAPTCHA triggers by emulating real devices
+
+BROWSER_PROFILES = {
+    'desktop_windows': {
+        'name': 'Desktop Windows',
+        'description': 'Windows 10/11 Chrome browser',
+        'viewport': {'width': 1920, 'height': 1080},
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'is_mobile': False,
+        'has_touch': False,
+        'device_scale_factor': 1,
+        'locale': 'en-US',
+        'timezone_id': 'America/New_York'
+    },
+    'desktop_mac': {
+        'name': 'Desktop Mac',
+        'description': 'macOS Sonoma Safari browser',
+        'viewport': {'width': 1440, 'height': 900},
+        'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+        'is_mobile': False,
+        'has_touch': False,
+        'device_scale_factor': 2,
+        'locale': 'en-US',
+        'timezone_id': 'America/Los_Angeles'
+    },
+    'mobile_iphone': {
+        'name': 'iPhone 15 Pro',
+        'description': 'iPhone 15 Pro Safari (iOS 17)',
+        'viewport': {'width': 393, 'height': 852},
+        'user_agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
+        'is_mobile': True,
+        'has_touch': True,
+        'device_scale_factor': 3,
+        'locale': 'en-US',
+        'timezone_id': 'America/New_York'
+    },
+    'mobile_iphone_chrome': {
+        'name': 'iPhone Chrome',
+        'description': 'iPhone Chrome browser (iOS 17)',
+        'viewport': {'width': 393, 'height': 852},
+        'user_agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/121.0.6167.66 Mobile/15E148 Safari/604.1',
+        'is_mobile': True,
+        'has_touch': True,
+        'device_scale_factor': 3,
+        'locale': 'en-US',
+        'timezone_id': 'America/New_York'
+    },
+    'mobile_android': {
+        'name': 'Samsung Galaxy S23',
+        'description': 'Samsung Galaxy S23 Chrome (Android 14)',
+        'viewport': {'width': 360, 'height': 780},
+        'user_agent': 'Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.101 Mobile Safari/537.36',
+        'is_mobile': True,
+        'has_touch': True,
+        'device_scale_factor': 3,
+        'locale': 'en-US',
+        'timezone_id': 'America/New_York'
+    },
+    'mobile_pixel': {
+        'name': 'Google Pixel 8',
+        'description': 'Google Pixel 8 Chrome (Android 14)',
+        'viewport': {'width': 412, 'height': 915},
+        'user_agent': 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.101 Mobile Safari/537.36',
+        'is_mobile': True,
+        'has_touch': True,
+        'device_scale_factor': 2.625,
+        'locale': 'en-US',
+        'timezone_id': 'America/Los_Angeles'
+    },
+    'tablet_ipad': {
+        'name': 'iPad Pro 12.9',
+        'description': 'iPad Pro 12.9-inch Safari (iPadOS 17)',
+        'viewport': {'width': 1024, 'height': 1366},
+        'user_agent': 'Mozilla/5.0 (iPad; CPU OS 17_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
+        'is_mobile': True,
+        'has_touch': True,
+        'device_scale_factor': 2,
+        'locale': 'en-US',
+        'timezone_id': 'America/New_York'
+    },
+    'custom': {
+        'name': 'Custom',
+        'description': 'User-defined settings',
+        'viewport': {'width': 1920, 'height': 1080},
+        'user_agent': '',  # Will be set from settings
+        'is_mobile': False,
+        'has_touch': False,
+        'device_scale_factor': 1,
+        'locale': 'en-US',
+        'timezone_id': 'America/New_York'
+    }
+}
+
+def get_browser_profile(profile_name: str, custom_settings: dict = None) -> dict:
+    """
+    Get browser profile settings.
+    
+    Args:
+        profile_name: Name of the profile (desktop_windows, mobile_iphone, etc.)
+        custom_settings: Custom settings to override (for 'custom' profile)
+    
+    Returns:
+        Dict with viewport, user_agent, is_mobile, has_touch, device_scale_factor, locale, timezone_id
+    """
+    if profile_name not in BROWSER_PROFILES:
+        logger.warning(f"Unknown browser profile '{profile_name}', using desktop_windows")
+        profile_name = 'desktop_windows'
+    
+    profile = BROWSER_PROFILES[profile_name].copy()
+    
+    # For custom profile, merge with user settings
+    if profile_name == 'custom' and custom_settings:
+        if custom_settings.get('viewport_width') and custom_settings.get('viewport_height'):
+            profile['viewport'] = {
+                'width': int(custom_settings['viewport_width']),
+                'height': int(custom_settings['viewport_height'])
+            }
+        if custom_settings.get('user_agent'):
+            profile['user_agent'] = custom_settings['user_agent']
+        if 'is_mobile' in custom_settings:
+            profile['is_mobile'] = custom_settings['is_mobile']
+        if 'has_touch' in custom_settings:
+            profile['has_touch'] = custom_settings['has_touch']
+        if custom_settings.get('device_scale_factor'):
+            profile['device_scale_factor'] = float(custom_settings['device_scale_factor'])
+        if custom_settings.get('locale'):
+            profile['locale'] = custom_settings['locale']
+        if custom_settings.get('timezone_id'):
+            profile['timezone_id'] = custom_settings['timezone_id']
+    
+    return profile
+
+
 # Try to import AI CAPTCHA solver components
 AI_SOLVER_AVAILABLE = False
 YOLO_MODEL = None
@@ -223,6 +359,171 @@ class TailscaleManager:
         except Exception as e:
             logger.error(f"Failed to disable exit node: {e}")
             return False
+
+
+class CaptchaTester:
+    """Test if an IP triggers CAPTCHA on Google reCAPTCHA demo page"""
+    
+    RECAPTCHA_DEMO_URL = "https://www.google.com/recaptcha/api2/demo"
+    
+    def __init__(self, headless: bool = True, browser_profile: str = 'desktop_windows', browser_profile_settings: dict = None):
+        """
+        Args:
+            headless: If True, browser runs in background. If False, browser window is visible.
+            browser_profile: Profile name for browser fingerprint
+            browser_profile_settings: Custom profile settings (for 'custom' profile)
+        """
+        self.headless = headless
+        self.browser_profile = browser_profile
+        self.browser_profile_settings = browser_profile_settings or {}
+        self.playwright = None
+        self.browser = None
+        self.page = None
+    
+    async def test_captcha(self) -> dict:
+        """
+        Test if current IP triggers CAPTCHA challenge.
+        
+        Returns:
+            dict with:
+                - captcha_triggered: bool - True if CAPTCHA challenge appeared
+                - message: str - Description of result
+        """
+        try:
+            self.playwright = await async_playwright().start()
+            
+            # Get browser profile settings
+            profile = get_browser_profile(self.browser_profile, self.browser_profile_settings)
+            logger.info(f"[CaptchaTester] Using browser profile: {profile.get('name', self.browser_profile)}")
+            
+            # Launch browser with anti-detection
+            self.browser = await self.playwright.chromium.launch(
+                headless=self.headless,
+                args=[
+                    '--disable-blink-features=AutomationControlled',
+                    '--disable-dev-shm-usage',
+                    '--no-sandbox',
+                    '--disable-web-security',
+                    '--disable-features=VizDisplayCompositor'
+                ]
+            )
+            
+            # Default user agent fallback
+            default_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+            user_agent = profile.get('user_agent') or default_user_agent
+            
+            # Create context with profile settings
+            context = await self.browser.new_context(
+                viewport=profile.get('viewport', {'width': 1920, 'height': 1080}),
+                user_agent=user_agent,
+                locale=profile.get('locale', 'en-US'),
+                timezone_id=profile.get('timezone_id', 'America/New_York'),
+                is_mobile=profile.get('is_mobile', False),
+                has_touch=profile.get('has_touch', False),
+                device_scale_factor=profile.get('device_scale_factor', 1)
+            )
+            
+            logger.info(f"[CaptchaTester] Viewport: {profile.get('viewport')}, Mobile: {profile.get('is_mobile', False)}")
+            
+            # Add anti-detection script
+            await context.add_init_script("""
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                window.chrome = { runtime: {} };
+            """)
+            
+            self.page = await context.new_page()
+            self.page.set_default_timeout(30000)
+            
+            logger.info(f"[CaptchaTester] Opening {self.RECAPTCHA_DEMO_URL}")
+            
+            # Navigate to reCAPTCHA demo page
+            await self.page.goto(self.RECAPTCHA_DEMO_URL, wait_until='networkidle')
+            await asyncio.sleep(2)
+            
+            # Find reCAPTCHA iframe
+            recaptcha_frame = None
+            for frame in self.page.frames:
+                if 'recaptcha' in frame.url and 'anchor' in frame.url:
+                    recaptcha_frame = frame
+                    break
+            
+            if not recaptcha_frame:
+                logger.warning("[CaptchaTester] Could not find reCAPTCHA iframe")
+                return {
+                    'captcha_triggered': None,
+                    'message': 'Could not find reCAPTCHA on page'
+                }
+            
+            # Click the checkbox
+            checkbox = await recaptcha_frame.wait_for_selector('.recaptcha-checkbox-border', state='visible', timeout=10000)
+            await checkbox.click()
+            logger.info("[CaptchaTester] Clicked reCAPTCHA checkbox")
+            
+            await asyncio.sleep(3)
+            
+            # Check if challenge appeared (look for bframe iframe)
+            challenge_appeared = False
+            for frame in self.page.frames:
+                if 'recaptcha' in frame.url and 'bframe' in frame.url:
+                    # Check if challenge content is visible
+                    try:
+                        challenge_content = await frame.query_selector('.rc-imageselect-desc, .rc-imageselect-instructions')
+                        if challenge_content:
+                            challenge_appeared = True
+                            break
+                    except:
+                        pass
+            
+            # Also check if checkbox shows checkmark (passed without challenge)
+            if not challenge_appeared:
+                try:
+                    checkmark = await recaptcha_frame.query_selector('.recaptcha-checkbox-checked')
+                    if checkmark:
+                        logger.info("[CaptchaTester] PASS - No CAPTCHA challenge, checkbox checked!")
+                        return {
+                            'captcha_triggered': False,
+                            'message': 'No CAPTCHA challenge - IP is clean!'
+                        }
+                except:
+                    pass
+            
+            if challenge_appeared:
+                logger.info("[CaptchaTester] FAIL - CAPTCHA challenge triggered")
+                return {
+                    'captcha_triggered': True,
+                    'message': 'CAPTCHA challenge appeared - IP may be flagged'
+                }
+            else:
+                # If we got here, the checkbox might still be processing
+                await asyncio.sleep(2)
+                
+                # Final check for checkmark
+                try:
+                    checkmark = await recaptcha_frame.query_selector('.recaptcha-checkbox-checked')
+                    if checkmark:
+                        return {
+                            'captcha_triggered': False,
+                            'message': 'No CAPTCHA challenge - IP is clean!'
+                        }
+                except:
+                    pass
+                
+                return {
+                    'captcha_triggered': True,
+                    'message': 'CAPTCHA state unclear - assuming triggered'
+                }
+                
+        except Exception as e:
+            logger.error(f"[CaptchaTester] Error: {e}")
+            return {
+                'captcha_triggered': None,
+                'message': f'Test error: {str(e)}'
+            }
+        finally:
+            if self.browser:
+                await self.browser.close()
+            if self.playwright:
+                await self.playwright.stop()
 
 
 class AICaptchaSolver:
@@ -1721,18 +2022,22 @@ class CardChecker:
     # reCAPTCHA site key for rcbalance.com (extracted from the page)
     RECAPTCHA_SITE_KEY = "6LfXFp0UAAAAAG_qc3vvlP7mf3vQ4xX8c8k6KmKv"
     
-    def __init__(self, headless: bool = True, timeout: int = 60000, status_callback=None, max_retries: int = 5, cancel_check=None, captcha_mode: str = 'auto', gemini_settings: dict = None):
+    def __init__(self, headless: bool = True, browser: str = 'chromium', timeout: int = 60000, status_callback=None, max_retries: int = 5, cancel_check=None, captcha_mode: str = 'auto', gemini_settings: dict = None, browser_profile: str = 'desktop_windows', browser_profile_settings: dict = None):
         """
         Args:
             headless: Run browser without display
+            browser: Browser type - 'chromium', 'firefox', or 'webkit'
             timeout: Maximum wait time (milliseconds)
             status_callback: Callback function for status updates
             max_retries: Maximum exit node switches for CAPTCHA
             cancel_check: Callback function that returns True if task should be cancelled
             captcha_mode: 'auto' = try exit nodes to bypass, 'manual' = wait for manual solve, 'ai' = use AI solver, 'gemini' = use Gemini AI
             gemini_settings: Dict with gemini_api_keys, gemini_current_key_index, gemini_model, gemini_prompt
+            browser_profile: Profile name for browser fingerprint (desktop_windows, mobile_iphone, etc.)
+            browser_profile_settings: Custom profile settings (for 'custom' profile)
         """
         self.headless = headless
+        self.browser_type = browser  # 'chromium', 'firefox', 'webkit'
         self.timeout = timeout
         self.browser = None
         self.page = None
@@ -1743,6 +2048,8 @@ class CardChecker:
         self._cancelled = False
         self.captcha_mode = captcha_mode  # 'auto', 'manual', 'ai', or 'gemini'
         self.gemini_settings = gemini_settings or {}
+        self.browser_profile = browser_profile
+        self.browser_profile_settings = browser_profile_settings or {}
     
     def is_cancelled(self) -> bool:
         """Check if task has been cancelled"""
@@ -1785,34 +2092,109 @@ class CardChecker:
         
     async def initialize(self):
         """Initialize browser"""
-        self.update_status("Initializing browser...", 15)
+        browser_names = {
+            'chromium': 'Chromium',
+            'chrome': 'Google Chrome',
+            'msedge': 'Microsoft Edge',
+            'firefox': 'Firefox',
+            'webkit': 'WebKit (Safari)'
+        }
+        self.update_status(f"Initializing {browser_names.get(self.browser_type, self.browser_type)} browser...", 15)
         
         self.playwright = await async_playwright().start()
         
-        self.browser = await self.playwright.chromium.launch(
-            headless=self.headless,
-            args=[
-                '--disable-blink-features=AutomationControlled',
-                '--disable-dev-shm-usage',
-                '--no-sandbox',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor'
-            ]
-        )
+        # Common Chromium-based args
+        chromium_args = [
+            '--disable-blink-features=AutomationControlled',
+            '--disable-dev-shm-usage',
+            '--no-sandbox',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
+        ]
         
-        # Create context with realistic settings
-        context = await self.browser.new_context(
-            viewport={'width': 1920, 'height': 1080},
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            locale='en-US',
-            timezone_id='America/New_York'
-        )
+        # Browser-specific launch
+        if self.browser_type == 'chromium':
+            self.browser = await self.playwright.chromium.launch(
+                headless=self.headless,
+                args=chromium_args
+            )
+        elif self.browser_type == 'chrome':
+            # Use installed Google Chrome via channel
+            self.browser = await self.playwright.chromium.launch(
+                headless=self.headless,
+                channel='chrome',
+                args=chromium_args
+            )
+        elif self.browser_type == 'msedge':
+            # Use installed Microsoft Edge via channel
+            self.browser = await self.playwright.chromium.launch(
+                headless=self.headless,
+                channel='msedge',
+                args=chromium_args
+            )
+        elif self.browser_type == 'firefox':
+            # Firefox uses firefox_user_prefs instead of args
+            self.browser = await self.playwright.firefox.launch(
+                headless=self.headless,
+                firefox_user_prefs={
+                    'dom.webdriver.enabled': False,
+                    'useAutomationExtension': False
+                }
+            )
+        elif self.browser_type == 'webkit':
+            self.browser = await self.playwright.webkit.launch(
+                headless=self.headless
+            )
+        else:
+            # Fallback to chromium
+            logger.warning(f"Unknown browser type '{self.browser_type}', falling back to chromium")
+            self.browser = await self.playwright.chromium.launch(
+                headless=self.headless,
+                args=chromium_args
+            )
         
-        # Script to hide automation
-        await context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-            window.chrome = { runtime: {} };
-        """)
+        # Get browser profile settings
+        profile = get_browser_profile(self.browser_profile, self.browser_profile_settings)
+        logger.info(f"Using browser profile: {profile.get('name', self.browser_profile)}")
+        
+        # Default user agents as fallback (if profile user_agent is empty)
+        default_user_agents = {
+            'chromium': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            'chrome': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            'msedge': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0',
+            'firefox': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
+            'webkit': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
+        }
+        
+        # Use profile user_agent or fallback to browser-specific default
+        user_agent = profile.get('user_agent') or default_user_agents.get(self.browser_type, default_user_agents['chromium'])
+        
+        # Create context with profile settings
+        context_options = {
+            'viewport': profile.get('viewport', {'width': 1920, 'height': 1080}),
+            'user_agent': user_agent,
+            'locale': profile.get('locale', 'en-US'),
+            'timezone_id': profile.get('timezone_id', 'America/New_York'),
+            'is_mobile': profile.get('is_mobile', False),
+            'has_touch': profile.get('has_touch', False),
+            'device_scale_factor': profile.get('device_scale_factor', 1)
+        }
+        
+        # Log profile details for debugging
+        self.update_status(f"Profile: {profile.get('name', 'Unknown')} ({profile.get('viewport', {}).get('width', '?')}x{profile.get('viewport', {}).get('height', '?')}, Mobile: {profile.get('is_mobile', False)})", 17)
+        
+        context = await self.browser.new_context(**context_options)
+        
+        # Script to hide automation (works on Chromium-based browsers)
+        if self.browser_type in ['chromium', 'chrome', 'msedge']:
+            # Enhanced anti-detection script - simple and safe version
+            await context.add_init_script("""
+                // Hide webdriver property
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                
+                // Add chrome object
+                window.chrome = { runtime: {} };
+            """)
         
         self.page = await context.new_page()
         self.page.set_default_timeout(self.timeout)

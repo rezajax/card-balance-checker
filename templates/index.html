@@ -240,6 +240,84 @@
             border-color: var(--muted-foreground);
         }
         
+        /* Browser Select - shadcn style */
+        .browser-select-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .browser-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding: 8px 36px 8px 12px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--foreground);
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            min-width: 170px;
+            transition: all 0.15s ease;
+        }
+        
+        .browser-select:hover {
+            border-color: var(--muted-foreground);
+            background: var(--secondary);
+        }
+        
+        .browser-select:focus {
+            outline: none;
+            border-color: var(--foreground);
+            box-shadow: 0 0 0 2px rgba(250, 250, 250, 0.1);
+        }
+        
+        .browser-select option {
+            background: var(--card);
+            color: var(--foreground);
+            padding: 8px 12px;
+        }
+        
+        .browser-select-icon {
+            position: absolute;
+            right: 10px;
+            pointer-events: none;
+            color: var(--muted-foreground);
+            transition: transform 0.15s ease;
+        }
+        
+        .browser-select:focus + .browser-select-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* Input Field - for custom settings */
+        .input-field {
+            padding: 8px 12px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--foreground);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+        
+        .input-field:hover {
+            border-color: var(--muted-foreground);
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--foreground);
+            box-shadow: 0 0 0 2px rgba(250, 250, 250, 0.1);
+        }
+        
+        .input-field::placeholder {
+            color: var(--muted-foreground);
+        }
+        
         .input::placeholder {
             color: var(--muted-foreground);
         }
@@ -333,6 +411,11 @@
         .badge-warning {
             background: rgba(234, 179, 8, 0.1);
             color: var(--warning);
+        }
+        
+        .badge-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--destructive);
         }
         
         /* Table */
@@ -561,6 +644,98 @@
             color: var(--muted-foreground);
             font-family: monospace;
         }
+        
+        /* Node Test Status */
+        .node-test-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .node-status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .node-status-badge.pass {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+        
+        .node-status-badge.fail {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .node-status-badge.testing {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .node-status-badge.unknown {
+            background: rgba(100, 116, 139, 0.15);
+            color: #64748b;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .node-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        
+        .test-progress-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        
+        .test-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #3b82f6);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        .test-summary {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--background);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        
+        .test-summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .test-summary-label {
+            font-size: 11px;
+            color: var(--muted-foreground);
+            text-transform: uppercase;
+        }
+        
+        .test-summary-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .test-summary-value.pass { color: #22c55e; }
+        .test-summary-value.fail { color: #ef4444; }
         
         /* Card Item */
         .card-item {
@@ -864,6 +1039,7 @@
             <button class="tab" data-tab="cards">Cards</button>
             <button class="tab" data-tab="nodes">Exit Nodes</button>
             <button class="tab" data-tab="settings">Settings</button>
+            <button class="tab" data-tab="plugin">🔌 Plugin</button>
         </div>
         
         <!-- Dashboard Tab -->
@@ -1113,7 +1289,7 @@
                 <div class="card-header">
                     <div>
                         <div class="card-title">Tailscale Exit Nodes</div>
-                        <div class="card-description">Available exit nodes for IP rotation</div>
+                        <div class="card-description">Available exit nodes for IP rotation - Test for CAPTCHA triggers</div>
                     </div>
                     <div class="flex gap-2">
                         <button class="btn btn-ghost btn-sm" id="disableNodeBtn">Disable</button>
@@ -1124,7 +1300,27 @@
                             </svg>
                             Refresh
                         </button>
+                        <button class="btn btn-sm" id="testAllNodesBtn" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border: none; color: white;">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12l2 2 4-4"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                            Test All
+                        </button>
+                        <button class="btn btn-sm" id="stopTestBtn" style="background: var(--destructive); color: white; display: none;">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="6" y="6" width="12" height="12" rx="2"/>
+                            </svg>
+                            Stop
+                        </button>
                     </div>
+                </div>
+                
+                <div class="flex items-center gap-2 mb-4" style="flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--secondary); border-radius: var(--radius); cursor: pointer;">
+                        <input type="checkbox" id="testShowBrowser" style="width: 16px; height: 16px; cursor: pointer;">
+                        <span class="text-sm">Show Browser</span>
+                    </label>
                 </div>
                 
                 <div class="flex items-center gap-2 mb-4" style="flex-wrap: wrap;">
@@ -1137,6 +1333,31 @@
                         </svg>
                         Disconnect
                     </button>
+                </div>
+                
+                <!-- Test Progress (hidden by default) -->
+                <div id="testProgressContainer" style="display: none;">
+                    <div class="test-progress-bar">
+                        <div class="test-progress-fill" id="testProgressFill" style="width: 0%;"></div>
+                    </div>
+                    <div class="test-summary">
+                        <div class="test-summary-item">
+                            <span class="test-summary-label">Testing</span>
+                            <span class="test-summary-value" id="testCurrentNode">-</span>
+                        </div>
+                        <div class="test-summary-item">
+                            <span class="test-summary-label">Passed</span>
+                            <span class="test-summary-value pass" id="testPassedCount">0</span>
+                        </div>
+                        <div class="test-summary-item">
+                            <span class="test-summary-label">Failed</span>
+                            <span class="test-summary-value fail" id="testFailedCount">0</span>
+                        </div>
+                        <div class="test-summary-item">
+                            <span class="test-summary-label">Progress</span>
+                            <span class="test-summary-value" id="testProgressText">0/0</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="node-list" id="nodesList">
@@ -1168,6 +1389,44 @@
                         <input type="checkbox" id="settingHeadless" checked>
                         <span class="switch-slider"></span>
                     </label>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Browser</div>
+                        <div class="setting-description">Select browser engine (Stealth bypasses Cloudflare/CAPTCHA)</div>
+                    </div>
+                    <div class="browser-select-wrapper">
+                        <select id="settingBrowser" class="browser-select">
+                            <option value="chromium">Chromium</option>
+                            <option value="chrome">Google Chrome</option>
+                            <option value="msedge">Microsoft Edge</option>
+                            <option value="firefox">Firefox</option>
+                            <option value="webkit">WebKit (Safari)</option>
+                            <option value="stealth">🔒 Stealth (Anti-Detection)</option>
+                        </select>
+                        <svg class="browser-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Stealth Browser Info Box -->
+                <div id="stealthBrowserInfo" style="display: none; padding: 12px; background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1)); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: var(--radius); margin-bottom: 16px;">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="font-size: 20px;">🔒</span>
+                        <div>
+                            <div style="font-weight: 600; color: #22c55e; margin-bottom: 4px;">Stealth Mode Active</div>
+                            <div style="font-size: 13px; color: var(--muted-foreground); line-height: 1.5;">
+                                Uses SeleniumBase UC Mode with anti-detection features:
+                                <ul style="margin: 8px 0 0 16px; padding: 0;">
+                                    <li>Bypasses Cloudflare challenges</li>
+                                    <li>Hides automation detection (CDP)</li>
+                                    <li>Reduces CAPTCHA triggers</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="setting-row">
@@ -1466,6 +1725,98 @@
                     </label>
                 </div>
                 
+                <!-- Browser Profile Settings -->
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <div class="card-title" style="margin-bottom: 8px;">Browser Profile (Anti-Detection)</div>
+                    <div class="card-description" style="margin-bottom: 16px;">Configure browser fingerprint to reduce CAPTCHA triggers</div>
+                </div>
+                
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Browser Profile</div>
+                        <div class="setting-description">Select device profile to emulate</div>
+                    </div>
+                    <div class="browser-select-wrapper">
+                        <select id="settingBrowserProfile" class="browser-select">
+                            <option value="desktop_windows">Desktop Windows</option>
+                            <option value="desktop_mac">Desktop Mac</option>
+                            <option value="mobile_iphone">iPhone 15 Pro</option>
+                            <option value="mobile_iphone_chrome">iPhone Chrome</option>
+                            <option value="mobile_android">Samsung Galaxy S23</option>
+                            <option value="mobile_pixel">Google Pixel 8</option>
+                            <option value="tablet_ipad">iPad Pro 12.9</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                        <svg class="browser-select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div id="profilePreview" style="padding: 12px; background: var(--background); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px;">
+                    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                        <div>
+                            <span class="text-sm text-muted">Viewport:</span>
+                            <span class="text-sm font-medium" id="previewViewport">1920x1080</span>
+                        </div>
+                        <div>
+                            <span class="text-sm text-muted">Mobile:</span>
+                            <span class="text-sm font-medium" id="previewMobile">No</span>
+                        </div>
+                        <div>
+                            <span class="text-sm text-muted">Touch:</span>
+                            <span class="text-sm font-medium" id="previewTouch">No</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Custom Profile Settings (hidden by default) -->
+                <div id="customProfileSettings" style="display: none; padding: 16px; background: rgba(59, 130, 246, 0.05); border-radius: var(--radius); border: 1px solid rgba(59, 130, 246, 0.2); margin-bottom: 16px;">
+                    <div class="card-title" style="margin-bottom: 12px; font-size: 14px;">Custom Profile Settings</div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 4px;">Viewport Width</label>
+                            <input type="number" id="customViewportWidth" class="input-field" value="1920" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 4px;">Viewport Height</label>
+                            <input type="number" id="customViewportHeight" class="input-field" value="1080" style="width: 100%;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label class="text-sm text-muted" style="display: block; margin-bottom: 4px;">User Agent (leave empty for default)</label>
+                        <input type="text" id="customUserAgent" class="input-field" placeholder="Mozilla/5.0 ..." style="width: 100%;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 4px;">Device Scale Factor</label>
+                            <input type="number" id="customDeviceScale" class="input-field" value="1" min="1" max="3" step="0.5" style="width: 100%;">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; padding-top: 20px;">
+                            <input type="checkbox" id="customIsMobile">
+                            <label class="text-sm">Mobile Mode</label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; padding-top: 20px;">
+                            <input type="checkbox" id="customHasTouch">
+                            <label class="text-sm">Touch Support</label>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 4px;">Locale</label>
+                            <input type="text" id="customLocale" class="input-field" value="en-US" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 4px;">Timezone</label>
+                            <input type="text" id="customTimezone" class="input-field" value="America/New_York" style="width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="setting-row" style="border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px;">
                     <div class="setting-info">
                         <div class="setting-label">Debug Logging</div>
@@ -1478,6 +1829,184 @@
                 </div>
                 
                 <button class="btn btn-primary mt-4" id="saveSettingsBtn">Save Settings</button>
+            </div>
+        </div>
+        
+        <!-- Plugin Tab -->
+        <div class="tab-content" id="plugin">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">🔌 Browser Plugin Tester</div>
+                        <div class="card-description">Test websites with custom browser settings, exit nodes, and headers</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-2" style="gap: 24px;">
+                    <!-- Left Column: Configuration -->
+                    <div>
+                        <div style="margin-bottom: 20px;">
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">🌐 Target URL</label>
+                            <input type="url" id="pluginUrl" class="input" placeholder="https://example.com" style="width: 100%;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                            <div>
+                                <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">🖥️ Browser</label>
+                                <select id="pluginBrowser" class="browser-select" style="width: 100%;">
+                                    <option value="chromium">Chromium</option>
+                                    <option value="chrome">Google Chrome</option>
+                                    <option value="firefox">Firefox</option>
+                                    <option value="webkit">WebKit (Safari)</option>
+                                    <option value="msedge">Microsoft Edge</option>
+                                    <option value="stealth">🔒 Stealth (UC Mode)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">🔄 Exit Node</label>
+                                <select id="pluginExitNode" class="browser-select" style="width: 100%;">
+                                    <option value="">None (Direct)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">📜 Custom Headers (JSON format)</label>
+                            <textarea id="pluginHeaders" class="input" rows="4" placeholder='{"User-Agent": "Custom UA", "Accept-Language": "en-US"}'></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                            <div>
+                                <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">⏱️ Timeout (seconds)</label>
+                                <input type="number" id="pluginTimeout" class="input" value="30" min="5" max="300">
+                            </div>
+                            <div>
+                                <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">📐 Viewport</label>
+                                <select id="pluginViewport" class="browser-select" style="width: 100%;">
+                                    <option value="1920x1080">Desktop (1920x1080)</option>
+                                    <option value="1366x768">Laptop (1366x768)</option>
+                                    <option value="375x812">iPhone X (375x812)</option>
+                                    <option value="414x896">iPhone XR (414x896)</option>
+                                    <option value="360x640">Android (360x640)</option>
+                                    <option value="768x1024">iPad (768x1024)</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="pluginCustomViewport" style="display: none; margin-bottom: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">Width</label>
+                                    <input type="number" id="pluginViewportWidth" class="input" value="1920" min="320" max="3840">
+                                </div>
+                                <div>
+                                    <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">Height</label>
+                                    <input type="number" id="pluginViewportHeight" class="input" value="1080" min="480" max="2160">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="pluginHeadless">
+                                <span class="text-sm">Headless Mode</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="pluginScreenshot" checked>
+                                <span class="text-sm">Take Screenshot</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="pluginConsoleLog">
+                                <span class="text-sm">Capture Console</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: rgba(234, 179, 8, 0.1); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(234, 179, 8, 0.3);">
+                                <input type="checkbox" id="pluginKeepOpen">
+                                <span class="text-sm" style="color: #eab308;">🔓 Keep Browser Open</span>
+                            </label>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">📝 JavaScript to Execute (optional)</label>
+                            <textarea id="pluginScript" class="input" rows="4" placeholder="return document.title; // یا هر کد جاوااسکریپتی" style="font-family: monospace;"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" id="pluginTestBtn" onclick="runPluginTest()">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                                <span>Run Test</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="stopPluginTest()">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="6" y="6" width="12" height="12"/>
+                                </svg>
+                                <span>Stop</span>
+                            </button>
+                            <button class="btn btn-ghost" onclick="clearPluginResults()">Clear Results</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: Results -->
+                    <div>
+                        <div class="card" style="background: var(--muted); margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span class="text-sm text-muted">Status</span>
+                                <span id="pluginStatus" class="badge">Ready</span>
+                            </div>
+                            <div id="pluginResultInfo" style="font-size: 13px; color: var(--muted-foreground);">
+                                Configure settings and click "Run Test" to start
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">📸 Screenshot</label>
+                            <div id="pluginScreenshotContainer" style="background: var(--muted); border-radius: 8px; min-height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <span class="text-sm text-muted">No screenshot yet</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">📋 Response Info</label>
+                            <div id="pluginResponseInfo" style="background: var(--muted); border-radius: 8px; padding: 12px; font-family: monospace; font-size: 12px; max-height: 150px; overflow-y: auto;">
+                                <div class="text-muted">Waiting for test...</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">🖥️ Console Output</label>
+                            <div id="pluginConsoleOutput" style="background: #0d1117; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 11px; max-height: 200px; overflow-y: auto; color: #c9d1d9;">
+                                <div style="color: #8b949e;">// Console logs will appear here</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 16px;">
+                            <label class="text-sm text-muted" style="display: block; margin-bottom: 8px;">📜 Script Result</label>
+                            <div id="pluginScriptResult" style="background: var(--muted); border-radius: 8px; padding: 12px; font-family: monospace; font-size: 12px; max-height: 100px; overflow-y: auto;">
+                                <div class="text-muted">No script executed</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card" style="margin-top: 16px;">
+                <div class="card-header">
+                    <div class="card-title">⚡ Quick Tests</div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://httpbin.org/headers')">Test Headers</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://httpbin.org/ip')">Check IP</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://bot.sannysoft.com/')">Bot Detection</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://browserleaks.com/javascript')">Browser Fingerprint</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://www.whatismybrowser.com/')">Browser Info</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://ipleak.net/')">IP Leak Test</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://www.google.com/recaptcha/api2/demo')" style="background: linear-gradient(135deg, #4285f4, #34a853); color: white;">🔒 reCAPTCHA Demo</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://2captcha.com/demo/recaptcha-v2')">reCAPTCHA v2 Test</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickTest('https://antcpt.com/eng/information/demo-form/recaptcha-3-test-score.html')">reCAPTCHA v3 Score</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1530,6 +2059,7 @@
         // ============================================
         let settings = {
             headless: false,
+            browser: 'chromium',
             max_retries: 5,
             skip_duplicates: true,
             skip_checked: true,
@@ -1686,13 +2216,126 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
             }
         }
         
+        // ============================================
+        // Browser Profile Management
+        // ============================================
+        let browserProfiles = {};
+        
+        async function loadBrowserProfiles() {
+            try {
+                const response = await fetch('/settings/browser_profiles');
+                const data = await response.json();
+                
+                if (data.success) {
+                    browserProfiles = {};
+                    data.profiles.forEach(profile => {
+                        browserProfiles[profile.id] = profile;
+                    });
+                    
+                    // Set current value
+                    document.getElementById('settingBrowserProfile').value = data.current || 'desktop_windows';
+                    
+                    // Load custom settings if any
+                    if (data.custom_settings) {
+                        const cs = data.custom_settings;
+                        document.getElementById('customViewportWidth').value = cs.viewport_width || 1920;
+                        document.getElementById('customViewportHeight').value = cs.viewport_height || 1080;
+                        document.getElementById('customUserAgent').value = cs.user_agent || '';
+                        document.getElementById('customIsMobile').checked = cs.is_mobile || false;
+                        document.getElementById('customHasTouch').checked = cs.has_touch || false;
+                        document.getElementById('customDeviceScale').value = cs.device_scale_factor || 1;
+                        document.getElementById('customLocale').value = cs.locale || 'en-US';
+                        document.getElementById('customTimezone').value = cs.timezone_id || 'America/New_York';
+                    }
+                    
+                    updateProfilePreview();
+                }
+            } catch (e) {
+                console.error('Failed to load browser profiles:', e);
+            }
+        }
+        
+        function updateProfilePreview() {
+            const profileId = document.getElementById('settingBrowserProfile').value;
+            const customSettings = document.getElementById('customProfileSettings');
+            const preview = document.getElementById('profilePreview');
+            
+            // Show/hide custom settings
+            if (profileId === 'custom') {
+                customSettings.style.display = 'block';
+                // Update preview from custom fields
+                document.getElementById('previewViewport').textContent = 
+                    `${document.getElementById('customViewportWidth').value}x${document.getElementById('customViewportHeight').value}`;
+                document.getElementById('previewMobile').textContent = 
+                    document.getElementById('customIsMobile').checked ? 'Yes' : 'No';
+                document.getElementById('previewTouch').textContent = 
+                    document.getElementById('customHasTouch').checked ? 'Yes' : 'No';
+            } else {
+                customSettings.style.display = 'none';
+                // Update preview from profile data
+                const profile = browserProfiles[profileId];
+                if (profile) {
+                    document.getElementById('previewViewport').textContent = 
+                        `${profile.viewport.width}x${profile.viewport.height}`;
+                    document.getElementById('previewMobile').textContent = 
+                        profile.is_mobile ? 'Yes' : 'No';
+                    document.getElementById('previewTouch').textContent = 
+                        profile.has_touch ? 'Yes' : 'No';
+                }
+            }
+        }
+        
+        // Browser selection change handler
+        document.getElementById('settingBrowser').addEventListener('change', function() {
+            const browser = this.value;
+            const stealthInfo = document.getElementById('stealthBrowserInfo');
+            if (browser === 'stealth') {
+                stealthInfo.style.display = 'block';
+                showToast('🔒 Stealth Mode Selected', 'Anti-detection browser will bypass Cloudflare and reduce CAPTCHA triggers.', 'info', 4000);
+            } else {
+                stealthInfo.style.display = 'none';
+            }
+        });
+        
+        // Initial check for stealth browser on page load
+        function updateStealthInfoVisibility() {
+            const browser = document.getElementById('settingBrowser').value;
+            const stealthInfo = document.getElementById('stealthBrowserInfo');
+            if (stealthInfo) {
+                stealthInfo.style.display = browser === 'stealth' ? 'block' : 'none';
+            }
+        }
+        
+        // Profile selection change handler
+        document.getElementById('settingBrowserProfile').addEventListener('change', updateProfilePreview);
+        
+        // Custom field change handlers (update preview)
+        ['customViewportWidth', 'customViewportHeight', 'customIsMobile', 'customHasTouch'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateProfilePreview);
+            document.getElementById(id).addEventListener('input', updateProfilePreview);
+        });
+        
         document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
             // Parse Gemini API keys from textarea
             const keysText = document.getElementById('geminiApiKeys').value.trim();
             const geminiKeys = keysText ? keysText.split('\n').map(k => k.trim()).filter(k => k.length > 0) : [];
             
+            // Get browser profile settings
+            const browserProfile = document.getElementById('settingBrowserProfile').value;
+            const browserProfileCustom = {
+                viewport_width: parseInt(document.getElementById('customViewportWidth').value) || 1920,
+                viewport_height: parseInt(document.getElementById('customViewportHeight').value) || 1080,
+                user_agent: document.getElementById('customUserAgent').value || '',
+                is_mobile: document.getElementById('customIsMobile').checked,
+                has_touch: document.getElementById('customHasTouch').checked,
+                device_scale_factor: parseFloat(document.getElementById('customDeviceScale').value) || 1,
+                locale: document.getElementById('customLocale').value || 'en-US',
+                timezone_id: document.getElementById('customTimezone').value || 'America/New_York'
+            };
+            
             settings = {
                 headless: !document.getElementById('settingHeadless').checked,
+                browser: document.getElementById('settingBrowser').value,
                 max_retries: parseInt(document.getElementById('settingMaxRetries').value),
                 skip_duplicates: document.getElementById('settingSkipDuplicates').checked,
                 skip_checked: document.getElementById('settingSkipChecked').checked,
@@ -1700,6 +2343,8 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
                 captcha_mode: settings.captcha_mode,
                 always_use_exit_node: document.getElementById('settingAlwaysUseExitNode').checked,
                 disconnect_after_task: document.getElementById('settingDisconnectAfterTask').checked,
+                browser_profile: browserProfile,
+                browser_profile_custom: browserProfileCustom,
                 debug_logging: document.getElementById('settingDebugLogging').checked,
                 gemini_api_keys: geminiKeys,
                 gemini_current_key_index: settings.gemini_current_key_index || 0,
@@ -1719,7 +2364,7 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
                 
                 if (response.ok) {
                     showToast('Settings Saved', geminiKeys.length > 0 ? `${geminiKeys.length} Gemini API key(s) configured` : 'All settings saved successfully', 'success');
-                    addLog(`Settings saved (${geminiKeys.length} Gemini keys)`, 'success');
+                    addLog(`Settings saved (${geminiKeys.length} Gemini keys, Profile: ${browserProfile})`, 'success');
                     updateGeminiKeyStatus();
                 } else {
                     const data = await response.json();
@@ -2371,6 +3016,58 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
         // ============================================
         // Exit Nodes
         // ============================================
+        
+        // Store test results for nodes
+        let nodeTestResults = {};
+        let isTestingNodes = false;
+        let testCancelled = false;
+        
+        function showStopButton(show) {
+            document.getElementById('stopTestBtn').style.display = show ? 'inline-flex' : 'none';
+        }
+        
+        async function stopNodeTest() {
+            if (isTestingNodes) {
+                testCancelled = true;
+                addLog('Force stopping test...', 'warning');
+                
+                // Call backend to force stop
+                try {
+                    const response = await fetch('/exit_nodes/test/stop', { method: 'POST' });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        addLog('Test force stopped! Browser killed, exit node disconnected.', 'success');
+                    } else {
+                        addLog(`Stop failed: ${data.error}`, 'error');
+                    }
+                } catch (e) {
+                    addLog(`Error stopping test: ${e.message}`, 'error');
+                }
+                
+                // Reset UI
+                isTestingNodes = false;
+                showStopButton(false);
+                loadNodes();
+                
+                // Reset Test All button if it was running
+                const testBtn = document.getElementById('testAllNodesBtn');
+                testBtn.disabled = false;
+                testBtn.innerHTML = `
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Test All
+                `;
+                
+                // Hide progress
+                document.getElementById('testProgressContainer').style.display = 'none';
+            }
+        }
+        
+        document.getElementById('stopTestBtn').addEventListener('click', stopNodeTest);
+        
         async function loadNodes() {
             try {
                 const response = await fetch('/exit_nodes');
@@ -2403,22 +3100,227 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
                         return;
                     }
                     
-                    container.innerHTML = data.nodes.map(node => `
+                    container.innerHTML = data.nodes.map(node => {
+                        const testResult = nodeTestResults[node.hostname];
+                        const statusBadge = testResult 
+                            ? `<span class="node-status-badge ${testResult.status}">${testResult.status === 'pass' ? 'PASS' : testResult.status === 'fail' ? 'FAIL' : testResult.status.toUpperCase()}</span>`
+                            : `<span class="node-status-badge unknown">Not Tested</span>`;
+                        
+                        return `
                         <div class="node-item ${node.active ? 'active' : ''}" data-hostname="${node.hostname}">
                             <div class="node-info">
                                 <div class="node-hostname">${node.hostname}</div>
                                 <div class="node-ip">${node.ip}</div>
                             </div>
-                            <button class="btn ${node.active ? 'btn-ghost' : 'btn-secondary'} btn-sm" onclick="${node.active ? 'disconnectNode()' : `switchNode('${node.hostname}')`}">
-                                ${node.active ? 'Disconnect' : 'Connect'}
-                            </button>
+                            <div class="node-actions">
+                                ${statusBadge}
+                                <button class="btn btn-sm" onclick="testSingleNode('${node.hostname}')" ${isTestingNodes ? 'disabled' : ''} style="background: var(--secondary); font-size: 11px; padding: 4px 8px;">
+                                    Test
+                                </button>
+                                <button class="btn ${node.active ? 'btn-ghost' : 'btn-secondary'} btn-sm" onclick="${node.active ? 'disconnectNode()' : `switchNode('${node.hostname}')`}">
+                                    ${node.active ? 'Disconnect' : 'Connect'}
+                                </button>
+                            </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 }
             } catch (e) {
                 console.error('Failed to load nodes:', e);
             }
         }
+        
+        async function testSingleNode(hostname) {
+            if (isTestingNodes) return;
+            
+            isTestingNodes = true;
+            testCancelled = false;
+            showStopButton(true);
+            
+            const showBrowser = document.getElementById('testShowBrowser').checked;
+            addLog(`Testing CAPTCHA for ${hostname}... (Browser: ${showBrowser ? 'visible' : 'hidden'})`, 'step');
+            
+            // Update UI to show testing state
+            const nodeItem = document.querySelector(`[data-hostname="${hostname}"]`);
+            if (nodeItem) {
+                const badge = nodeItem.querySelector('.node-status-badge');
+                if (badge) {
+                    badge.className = 'node-status-badge testing';
+                    badge.textContent = 'TESTING...';
+                }
+            }
+            
+            try {
+                const response = await fetch('/exit_nodes/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hostname, headless: !showBrowser })
+                });
+                
+                const data = await response.json();
+                
+                if (testCancelled) {
+                    addLog(`${hostname}: Test cancelled`, 'warning');
+                    nodeTestResults[hostname] = { status: 'unknown', message: 'Cancelled' };
+                } else if (data.success) {
+                    nodeTestResults[hostname] = {
+                        status: data.status,
+                        captcha_triggered: data.captcha_triggered,
+                        message: data.message
+                    };
+                    
+                    if (data.status === 'pass') {
+                        addLog(`${hostname}: PASS - No CAPTCHA triggered!`, 'success');
+                    } else {
+                        addLog(`${hostname}: FAIL - CAPTCHA triggered`, 'warning');
+                    }
+                } else {
+                    nodeTestResults[hostname] = {
+                        status: 'error',
+                        message: data.error
+                    };
+                    addLog(`${hostname}: Error - ${data.error}`, 'error');
+                }
+                
+                loadNodes(); // Refresh to show result
+                
+            } catch (e) {
+                addLog(`Error testing ${hostname}: ${e.message}`, 'error');
+                nodeTestResults[hostname] = {
+                    status: 'error',
+                    message: e.message
+                };
+                loadNodes();
+            } finally {
+                isTestingNodes = false;
+                showStopButton(false);
+            }
+        }
+        
+        async function testAllNodes() {
+            if (isTestingNodes) return;
+            
+            isTestingNodes = true;
+            testCancelled = false;
+            showStopButton(true);
+            
+            const testBtn = document.getElementById('testAllNodesBtn');
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="spinner"></span> Testing...';
+            
+            // Show progress container
+            const progressContainer = document.getElementById('testProgressContainer');
+            progressContainer.style.display = 'block';
+            
+            const showBrowser = document.getElementById('testShowBrowser').checked;
+            addLog(`Starting CAPTCHA test for all exit nodes... (Browser: ${showBrowser ? 'visible' : 'hidden'})`, 'step');
+            
+            try {
+                // First get the list of nodes
+                const nodesResponse = await fetch('/exit_nodes');
+                const nodesData = await nodesResponse.json();
+                
+                if (!nodesData.success || nodesData.nodes.length === 0) {
+                    addLog('No exit nodes available to test', 'warning');
+                    return;
+                }
+                
+                const nodes = nodesData.nodes;
+                let passed = 0;
+                let failed = 0;
+                
+                for (let i = 0; i < nodes.length; i++) {
+                    // Check if cancelled
+                    if (testCancelled) {
+                        addLog('Test cancelled by user', 'warning');
+                        break;
+                    }
+                    
+                    const node = nodes[i];
+                    const progress = Math.round(((i + 1) / nodes.length) * 100);
+                    
+                    // Update progress UI
+                    document.getElementById('testProgressFill').style.width = `${progress}%`;
+                    document.getElementById('testCurrentNode').textContent = node.hostname;
+                    document.getElementById('testProgressText').textContent = `${i + 1}/${nodes.length}`;
+                    
+                    // Update node badge to testing
+                    nodeTestResults[node.hostname] = { status: 'testing' };
+                    loadNodes();
+                    
+                    // Test this node
+                    try {
+                        const response = await fetch('/exit_nodes/test', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ hostname: node.hostname, headless: !showBrowser })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            nodeTestResults[node.hostname] = {
+                                status: data.status,
+                                captcha_triggered: data.captcha_triggered,
+                                message: data.message
+                            };
+                            
+                            if (data.status === 'pass') {
+                                passed++;
+                                addLog(`${node.hostname}: PASS`, 'success');
+                            } else {
+                                failed++;
+                                addLog(`${node.hostname}: FAIL`, 'warning');
+                            }
+                        } else {
+                            nodeTestResults[node.hostname] = {
+                                status: 'error',
+                                message: data.error
+                            };
+                            failed++;
+                            addLog(`${node.hostname}: Error - ${data.error}`, 'error');
+                        }
+                        
+                    } catch (e) {
+                        nodeTestResults[node.hostname] = {
+                            status: 'error',
+                            message: e.message
+                        };
+                        failed++;
+                        addLog(`${node.hostname}: Error - ${e.message}`, 'error');
+                    }
+                    
+                    // Update counts
+                    document.getElementById('testPassedCount').textContent = passed;
+                    document.getElementById('testFailedCount').textContent = failed;
+                    
+                    loadNodes();
+                }
+                
+                addLog(`Test complete: ${passed} passed, ${failed} failed out of ${nodes.length} nodes`, 'success');
+                
+            } catch (e) {
+                addLog(`Error testing nodes: ${e.message}`, 'error');
+            } finally {
+                isTestingNodes = false;
+                showStopButton(false);
+                testBtn.disabled = false;
+                testBtn.innerHTML = `
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Test All
+                `;
+                
+                // Hide progress after a shorter time if cancelled
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, testCancelled ? 1000 : 5000);
+            }
+        }
+        
+        // Event listener for Test All button
+        document.getElementById('testAllNodesBtn').addEventListener('click', testAllNodes);
         
         async function disconnectNode() {
             addLog('Disconnecting from exit node...', 'step');
@@ -2619,6 +3521,8 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
                     if (data.success) {
                         settings = data.settings;
                         document.getElementById('settingHeadless').checked = !settings.headless;
+                        document.getElementById('settingBrowser').value = settings.browser || 'chromium';
+                        updateStealthInfoVisibility(); // Show/hide stealth info box
                         document.getElementById('settingSkipDuplicates').checked = settings.skip_duplicates;
                         document.getElementById('settingSkipChecked').checked = settings.skip_checked;
                         document.getElementById('settingMaxRetries').value = settings.max_retries;
@@ -2630,6 +3534,21 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
                         // Exit node settings
                         document.getElementById('settingAlwaysUseExitNode').checked = settings.always_use_exit_node || false;
                         document.getElementById('settingDisconnectAfterTask').checked = settings.disconnect_after_task || false;
+                        // Browser profile settings
+                        document.getElementById('settingBrowserProfile').value = settings.browser_profile || 'desktop_windows';
+                        if (settings.browser_profile_custom) {
+                            const cs = settings.browser_profile_custom;
+                            document.getElementById('customViewportWidth').value = cs.viewport_width || 1920;
+                            document.getElementById('customViewportHeight').value = cs.viewport_height || 1080;
+                            document.getElementById('customUserAgent').value = cs.user_agent || '';
+                            document.getElementById('customIsMobile').checked = cs.is_mobile || false;
+                            document.getElementById('customHasTouch').checked = cs.has_touch || false;
+                            document.getElementById('customDeviceScale').value = cs.device_scale_factor || 1;
+                            document.getElementById('customLocale').value = cs.locale || 'en-US';
+                            document.getElementById('customTimezone').value = cs.timezone_id || 'America/New_York';
+                        }
+                        // Load browser profiles and update preview
+                        loadBrowserProfiles();
                         // Debug logging
                         document.getElementById('settingDebugLogging').checked = settings.debug_logging || false;
                         // Gemini settings
@@ -3046,6 +3965,238 @@ IMPORTANT: Only respond with the tile numbers, nothing else.`;
                 showToast('Error', 'Failed to reset statistics', 'error');
             }
         }
+        
+        // ============================================
+        // Plugin Tab Functions
+        // ============================================
+        
+        let pluginTestRunning = false;
+        
+        // Load exit nodes for plugin dropdown
+        async function loadPluginExitNodes() {
+            try {
+                const response = await fetch('/exit_nodes');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('pluginExitNode');
+                    select.innerHTML = '<option value="">None (Direct)</option>';
+                    
+                    data.nodes.forEach(node => {
+                        const option = document.createElement('option');
+                        option.value = node.hostname;
+                        option.textContent = `${node.hostname} (${node.ip})`;
+                        if (node.active) {
+                            option.textContent += ' ✓';
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load exit nodes:', e);
+            }
+        }
+        
+        // Viewport dropdown handler
+        document.getElementById('pluginViewport').addEventListener('change', function() {
+            const customDiv = document.getElementById('pluginCustomViewport');
+            if (this.value === 'custom') {
+                customDiv.style.display = 'block';
+            } else {
+                customDiv.style.display = 'none';
+            }
+        });
+        
+        // Quick test function
+        function quickTest(url) {
+            document.getElementById('pluginUrl').value = url;
+            runPluginTest();
+        }
+        
+        // Clear plugin results
+        function clearPluginResults() {
+            document.getElementById('pluginStatus').textContent = 'Ready';
+            document.getElementById('pluginStatus').className = 'badge';
+            document.getElementById('pluginResultInfo').innerHTML = 'Configure settings and click "Run Test" to start';
+            document.getElementById('pluginScreenshotContainer').innerHTML = '<span class="text-sm text-muted">No screenshot yet</span>';
+            document.getElementById('pluginResponseInfo').innerHTML = '<div class="text-muted">Waiting for test...</div>';
+            document.getElementById('pluginConsoleOutput').innerHTML = '<div style="color: #8b949e;">// Console logs will appear here</div>';
+            document.getElementById('pluginScriptResult').innerHTML = '<div class="text-muted">No script executed</div>';
+        }
+        
+        // Stop plugin test
+        async function stopPluginTest() {
+            if (!pluginTestRunning) return;
+            
+            try {
+                await fetch('/plugin/stop', { method: 'POST' });
+                pluginTestRunning = false;
+                document.getElementById('pluginStatus').textContent = 'Stopped';
+                document.getElementById('pluginStatus').className = 'badge badge-warning';
+                showToast('Stopped', 'Plugin test stopped', 'info');
+            } catch (e) {
+                showToast('Error', 'Failed to stop test', 'error');
+            }
+        }
+        
+        // Run plugin test
+        async function runPluginTest() {
+            const url = document.getElementById('pluginUrl').value.trim();
+            if (!url) {
+                showToast('Error', 'Please enter a URL', 'error');
+                return;
+            }
+            
+            // Validate URL
+            try {
+                new URL(url);
+            } catch (e) {
+                showToast('Error', 'Invalid URL format', 'error');
+                return;
+            }
+            
+            pluginTestRunning = true;
+            
+            // Update status
+            document.getElementById('pluginStatus').textContent = 'Running...';
+            document.getElementById('pluginStatus').className = 'badge badge-warning';
+            document.getElementById('pluginResultInfo').innerHTML = '<div>Initializing browser...</div>';
+            
+            // Get viewport
+            let viewport = document.getElementById('pluginViewport').value;
+            if (viewport === 'custom') {
+                const w = document.getElementById('pluginViewportWidth').value;
+                const h = document.getElementById('pluginViewportHeight').value;
+                viewport = `${w}x${h}`;
+            }
+            
+            // Parse headers
+            let headers = {};
+            const headersText = document.getElementById('pluginHeaders').value.trim();
+            if (headersText) {
+                try {
+                    headers = JSON.parse(headersText);
+                } catch (e) {
+                    showToast('Error', 'Invalid JSON in headers field', 'error');
+                    pluginTestRunning = false;
+                    document.getElementById('pluginStatus').textContent = 'Error';
+                    document.getElementById('pluginStatus').className = 'badge badge-error';
+                    return;
+                }
+            }
+            
+            const config = {
+                url: url,
+                browser: document.getElementById('pluginBrowser').value,
+                exit_node: document.getElementById('pluginExitNode').value,
+                headers: headers,
+                timeout: parseInt(document.getElementById('pluginTimeout').value) || 30,
+                viewport: viewport,
+                headless: document.getElementById('pluginHeadless').checked,
+                screenshot: document.getElementById('pluginScreenshot').checked,
+                capture_console: document.getElementById('pluginConsoleLog').checked,
+                keep_open: document.getElementById('pluginKeepOpen').checked,
+                script: document.getElementById('pluginScript').value.trim()
+            };
+            
+            try {
+                const response = await fetch('/plugin/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const data = await response.json();
+                pluginTestRunning = false;
+                
+                if (data.success) {
+                    document.getElementById('pluginStatus').textContent = 'Success';
+                    document.getElementById('pluginStatus').className = 'badge badge-success';
+                    
+                    // Show response info
+                    let infoHtml = `
+                        <div><strong>URL:</strong> ${data.final_url || url}</div>
+                        <div><strong>Status:</strong> ${data.status_code || 'N/A'}</div>
+                        <div><strong>Load Time:</strong> ${data.load_time || 'N/A'}ms</div>
+                        <div><strong>Page Title:</strong> ${data.title || 'N/A'}</div>
+                    `;
+                    if (data.exit_node_used) {
+                        infoHtml += `<div><strong>Exit Node:</strong> ${data.exit_node_used}</div>`;
+                    }
+                    if (data.detected_ip) {
+                        infoHtml += `<div><strong>Detected IP:</strong> ${data.detected_ip}</div>`;
+                    }
+                    document.getElementById('pluginResultInfo').innerHTML = infoHtml;
+                    
+                    // Show screenshot
+                    if (data.screenshot) {
+                        document.getElementById('pluginScreenshotContainer').innerHTML = `
+                            <img src="data:image/png;base64,${data.screenshot}" 
+                                 style="max-width: 100%; height: auto; border-radius: 4px; cursor: pointer;"
+                                 onclick="openScreenshotModal(this.src)">
+                        `;
+                    }
+                    
+                    // Show response info (detailed)
+                    if (data.response_headers) {
+                        let headersHtml = '<div style="color: #58a6ff;">Response Headers:</div>';
+                        for (const [key, value] of Object.entries(data.response_headers)) {
+                            headersHtml += `<div><span style="color: #7ee787;">${key}:</span> ${value}</div>`;
+                        }
+                        document.getElementById('pluginResponseInfo').innerHTML = headersHtml;
+                    }
+                    
+                    // Show console output
+                    if (data.console_logs && data.console_logs.length > 0) {
+                        let consoleHtml = data.console_logs.map(log => {
+                            const color = log.type === 'error' ? '#f85149' : 
+                                         log.type === 'warning' ? '#d29922' : '#c9d1d9';
+                            return `<div style="color: ${color};">[${log.type}] ${log.message}</div>`;
+                        }).join('');
+                        document.getElementById('pluginConsoleOutput').innerHTML = consoleHtml;
+                    }
+                    
+                    // Show script result
+                    if (data.script_result !== undefined) {
+                        document.getElementById('pluginScriptResult').innerHTML = `
+                            <pre style="margin: 0; white-space: pre-wrap;">${JSON.stringify(data.script_result, null, 2)}</pre>
+                        `;
+                    }
+                    
+                    showToast('Success', 'Test completed successfully', 'success');
+                } else {
+                    document.getElementById('pluginStatus').textContent = 'Failed';
+                    document.getElementById('pluginStatus').className = 'badge badge-error';
+                    document.getElementById('pluginResultInfo').innerHTML = `<div style="color: var(--destructive);">Error: ${data.error}</div>`;
+                    showToast('Error', data.error || 'Test failed', 'error');
+                }
+                
+            } catch (e) {
+                pluginTestRunning = false;
+                document.getElementById('pluginStatus').textContent = 'Error';
+                document.getElementById('pluginStatus').className = 'badge badge-error';
+                document.getElementById('pluginResultInfo').innerHTML = `<div style="color: var(--destructive);">Connection error: ${e.message}</div>`;
+                showToast('Error', 'Connection error', 'error');
+            }
+        }
+        
+        // Screenshot modal
+        function openScreenshotModal(src) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 10000; cursor: pointer;';
+            overlay.innerHTML = `<img src="${src}" style="max-width: 95%; max-height: 95%; border-radius: 8px;">`;
+            overlay.onclick = () => overlay.remove();
+            document.body.appendChild(overlay);
+        }
+        
+        // Initialize plugin tab on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load exit nodes when plugin tab is first opened
+            document.querySelector('[data-tab="plugin"]').addEventListener('click', function() {
+                loadPluginExitNodes();
+            }, { once: true });
+        });
     </script>
 </body>
 </html>

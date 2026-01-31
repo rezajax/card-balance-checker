@@ -12,6 +12,7 @@ import threading
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, Response
 from card_checker import CardChecker, TailscaleManager, get_api_key_tracker
+from stealth_card_checker import StealthCardChecker
 from sheets_manager import SheetsManager
 import logging
 import os
@@ -185,14 +186,29 @@ def check_balance():
         
         # Run automation - headless=False means you can SEE the browser
         global current_checker
-        checker = CardChecker(headless=headless, status_callback=update_status, max_retries=max_retries, cancel_check=check_cancelled, captcha_mode=captcha_mode, gemini_settings=gemini_settings)
-        current_checker = checker  # Store for force cancel
-        result = asyncio.run(checker.check_balance(
-            card_number=card_number,
-            exp_month=exp_month,
-            exp_year=exp_year,
-            cvv=cvv
-        ))
+        browser_type = data.get('browser', app_settings.get('browser', 'chromium'))
+        browser_profile = app_settings.get('browser_profile', 'desktop_windows')
+        browser_profile_custom = app_settings.get('browser_profile_custom', {})
+        
+        # Use StealthCardChecker for stealth browser mode
+        if browser_type == 'stealth':
+            logger.info("Using Stealth Browser (UC Mode) for anti-detection")
+            checker = StealthCardChecker(headless=headless, status_callback=update_status, max_retries=max_retries, cancel_check=check_cancelled, captcha_mode=captcha_mode, gemini_settings=gemini_settings)
+            current_checker = checker
+            # StealthCardChecker.check_balance is sync, run in thread
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(checker.check_balance, card_number, exp_month, exp_year, cvv)
+                result = future.result()
+        else:
+            checker = CardChecker(headless=headless, browser=browser_type, status_callback=update_status, max_retries=max_retries, cancel_check=check_cancelled, captcha_mode=captcha_mode, gemini_settings=gemini_settings, browser_profile=browser_profile, browser_profile_settings=browser_profile_custom)
+            current_checker = checker  # Store for force cancel
+            result = asyncio.run(checker.check_balance(
+                card_number=card_number,
+                exp_month=exp_month,
+                exp_year=exp_year,
+                cvv=cvv
+            ))
         current_checker = None  # Clear reference
         
         current_status['running'] = False
@@ -266,38 +282,52 @@ def get_status():
 
 @app.route('/cancel', methods=['POST'])
 def cancel_task():
-    """Force cancel the current running task - kills browser and disconnects exit node"""
+    """Cancel the current running task - closes only the task browser, not all browsers"""
     global current_status, current_checker
     import subprocess
     
     logger.info("=" * 50)
-    logger.info("FORCE CANCEL REQUESTED!")
+    logger.info("CANCEL TASK REQUESTED!")
     logger.info("=" * 50)
     
     # Set cancelled flag first
     current_status['cancelled'] = True
     
-    # Force cancel checker if exists
+    browser_closed = False
+    
+    # Try to gracefully close checker's browser first
     if current_checker:
         try:
+            # For StealthCardChecker
+            if hasattr(current_checker, 'browser') and current_checker.browser:
+                try:
+                    current_checker.browser.close()
+                    logger.info("Checker browser closed gracefully")
+                    browser_closed = True
+                except Exception as e:
+                    logger.warning(f"Error closing checker browser: {e}")
+            
+            # Call force_cancel for cleanup
             current_checker.force_cancel()
             logger.info("Checker force_cancel called")
+            browser_closed = True
         except Exception as e:
             logger.warning(f"Error calling force_cancel: {e}")
     
-    # Kill all chromium processes - most reliable way
-    try:
-        logger.info("Killing chromium processes...")
-        result = subprocess.run(['pkill', '-9', '-f', 'chromium'], capture_output=True)
-        logger.info(f"pkill chromium result: {result.returncode}")
-    except Exception as e:
-        logger.warning(f"Error killing chromium: {e}")
-    
-    # Also try to kill playwright
-    try:
-        subprocess.run(['pkill', '-9', '-f', 'playwright'], capture_output=True)
-    except:
-        pass
+    # Only kill chromedriver processes (automation drivers), not user browsers
+    # chromedriver is specific to Selenium automation
+    if not browser_closed:
+        try:
+            logger.info("Killing chromedriver processes only...")
+            subprocess.run(['pkill', '-9', '-f', 'chromedriver'], capture_output=True)
+        except:
+            pass
+        
+        # Kill playwright processes only
+        try:
+            subprocess.run(['pkill', '-9', '-f', 'playwright'], capture_output=True)
+        except:
+            pass
     
     # Disconnect exit node
     try:
@@ -309,17 +339,69 @@ def cancel_task():
     
     # Reset status
     current_status['running'] = False
-    current_status['step'] = 'Force Cancelled'
+    current_status['step'] = 'Cancelled'
     current_status['progress'] = 0
     current_status['current_task'] = None
     
     logger.info("=" * 50)
-    logger.info("FORCE CANCEL COMPLETE!")
+    logger.info("CANCEL COMPLETE!")
     logger.info("=" * 50)
     
     return jsonify({
         'success': True,
-        'message': 'Task force cancelled! Browser killed, exit node disconnected.'
+        'message': 'Task cancelled! Task browser closed, exit node disconnected.'
+    })
+
+
+@app.route('/force_kill_browsers', methods=['POST'])
+def force_kill_browsers():
+    """Force kill ALL browser processes - use only when normal cancel doesn't work"""
+    import subprocess
+    
+    logger.info("=" * 50)
+    logger.info("FORCE KILL ALL BROWSERS REQUESTED!")
+    logger.info("=" * 50)
+    
+    killed = []
+    
+    # Kill chromium processes
+    try:
+        result = subprocess.run(['pkill', '-9', '-f', 'chromium'], capture_output=True)
+        if result.returncode == 0:
+            killed.append('chromium')
+    except:
+        pass
+    
+    # Kill Chrome processes
+    try:
+        result = subprocess.run(['pkill', '-9', '-f', 'chrome'], capture_output=True)
+        if result.returncode == 0:
+            killed.append('chrome')
+    except:
+        pass
+    
+    # Kill chromedriver
+    try:
+        result = subprocess.run(['pkill', '-9', '-f', 'chromedriver'], capture_output=True)
+        if result.returncode == 0:
+            killed.append('chromedriver')
+    except:
+        pass
+    
+    # Kill playwright
+    try:
+        result = subprocess.run(['pkill', '-9', '-f', 'playwright'], capture_output=True)
+        if result.returncode == 0:
+            killed.append('playwright')
+    except:
+        pass
+    
+    logger.info(f"Force killed: {killed}")
+    
+    return jsonify({
+        'success': True,
+        'message': f'Force killed all browsers: {", ".join(killed) if killed else "none found"}',
+        'killed': killed
     })
 
 
@@ -529,14 +611,29 @@ def check_card_from_sheet(row_index):
         
         # Run automation
         global current_checker
-        checker = CardChecker(headless=headless, status_callback=update_status, max_retries=max_retries, cancel_check=check_cancelled, captcha_mode=captcha_mode, gemini_settings=gemini_settings)
-        current_checker = checker  # Store for force cancel
-        result = asyncio.run(checker.check_balance(
-            card_number=card['card_number'],
-            exp_month=card['exp_month'],
-            exp_year=card['exp_year'],
-            cvv=card['cvv']
-        ))
+        browser_type = data.get('browser', app_settings.get('browser', 'chromium'))
+        browser_profile = app_settings.get('browser_profile', 'desktop_windows')
+        browser_profile_custom = app_settings.get('browser_profile_custom', {})
+        
+        # Use StealthCardChecker for stealth browser mode
+        if browser_type == 'stealth':
+            logger.info("Using Stealth Browser (UC Mode) for anti-detection")
+            checker = StealthCardChecker(headless=headless, status_callback=update_status, max_retries=max_retries, cancel_check=check_cancelled, captcha_mode=captcha_mode, gemini_settings=gemini_settings)
+            current_checker = checker
+            # StealthCardChecker.check_balance is sync, run in thread
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(checker.check_balance, card['card_number'], card['exp_month'], card['exp_year'], card['cvv'])
+                result = future.result()
+        else:
+            checker = CardChecker(headless=headless, browser=browser_type, status_callback=update_status, max_retries=max_retries, cancel_check=check_cancelled, captcha_mode=captcha_mode, gemini_settings=gemini_settings, browser_profile=browser_profile, browser_profile_settings=browser_profile_custom)
+            current_checker = checker  # Store for force cancel
+            result = asyncio.run(checker.check_balance(
+                card_number=card['card_number'],
+                exp_month=card['exp_month'],
+                exp_year=card['exp_year'],
+                cvv=card['cvv']
+            ))
         current_checker = None  # Clear reference
         
         current_status['running'] = False
@@ -770,6 +867,178 @@ def disable_exit_node():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/exit_nodes/test', methods=['POST'])
+def test_exit_node_captcha():
+    """Test an exit node for CAPTCHA challenge"""
+    from card_checker import CaptchaTester
+    
+    try:
+        data = request.get_json() or {}
+        hostname = data.get('hostname')  # Single hostname or 'all'
+        headless = data.get('headless', True)  # Run browser in background by default
+        
+        # Get browser profile settings from app settings
+        browser_profile = app_settings.get('browser_profile', 'desktop_windows')
+        browser_profile_custom = app_settings.get('browser_profile_custom', {})
+        
+        logger.info(f"Testing with profile: {browser_profile}")
+        
+        if not hostname:
+            return jsonify({'success': False, 'error': 'hostname is required'}), 400
+        
+        # Get current exit node to restore later
+        original_node = TailscaleManager.get_current_exit_node()
+        
+        if hostname == 'all':
+            # Test all available nodes
+            nodes = TailscaleManager.get_available_exit_nodes()
+            results = []
+            
+            for node in nodes:
+                node_hostname = node['hostname']
+                logger.info(f"Testing exit node: {node_hostname}")
+                
+                # Switch to this node
+                if TailscaleManager.switch_exit_node(node_hostname):
+                    import time
+                    time.sleep(2)  # Wait for connection
+                    
+                    # Run CAPTCHA test with profile settings
+                    tester = CaptchaTester(headless=headless, browser_profile=browser_profile, browser_profile_settings=browser_profile_custom)
+                    test_result = asyncio.run(tester.test_captcha())
+                    
+                    results.append({
+                        'hostname': node_hostname,
+                        'ip': node['ip'],
+                        'captcha_triggered': test_result.get('captcha_triggered', True),
+                        'status': 'fail' if test_result.get('captcha_triggered', True) else 'pass',
+                        'message': test_result.get('message', '')
+                    })
+                else:
+                    results.append({
+                        'hostname': node_hostname,
+                        'ip': node['ip'],
+                        'captcha_triggered': None,
+                        'status': 'error',
+                        'message': 'Failed to connect to exit node'
+                    })
+            
+            # Restore original node or disconnect
+            if original_node:
+                TailscaleManager.switch_exit_node(original_node)
+            else:
+                TailscaleManager.disable_exit_node()
+            
+            passed = len([r for r in results if r['status'] == 'pass'])
+            failed = len([r for r in results if r['status'] == 'fail'])
+            
+            return jsonify({
+                'success': True,
+                'mode': 'all',
+                'total': len(results),
+                'passed': passed,
+                'failed': failed,
+                'results': results
+            })
+        else:
+            # Test single node
+            logger.info(f"Testing single exit node: {hostname} (headless={headless}, profile={browser_profile})")
+            
+            # Switch to target node
+            if not TailscaleManager.switch_exit_node(hostname):
+                return jsonify({
+                    'success': False,
+                    'error': f'Failed to connect to {hostname}'
+                }), 500
+            
+            import time
+            time.sleep(2)  # Wait for connection
+            
+            # Run CAPTCHA test with profile settings
+            tester = CaptchaTester(headless=headless, browser_profile=browser_profile, browser_profile_settings=browser_profile_custom)
+            test_result = asyncio.run(tester.test_captcha())
+            
+            # Restore original node or disconnect
+            if original_node:
+                TailscaleManager.switch_exit_node(original_node)
+            else:
+                TailscaleManager.disable_exit_node()
+            
+            return jsonify({
+                'success': True,
+                'mode': 'single',
+                'hostname': hostname,
+                'captcha_triggered': test_result.get('captcha_triggered', True),
+                'status': 'fail' if test_result.get('captcha_triggered', True) else 'pass',
+                'message': test_result.get('message', '')
+            })
+            
+    except Exception as e:
+        logger.error(f"Failed to test exit node: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/exit_nodes/test/stop', methods=['POST'])
+def stop_exit_node_test():
+    """Force stop the exit node CAPTCHA test - kills Playwright browser and disconnects exit node"""
+    import subprocess
+    
+    logger.info("=" * 50)
+    logger.info("FORCE STOP EXIT NODE TEST REQUESTED!")
+    logger.info("=" * 50)
+    
+    killed_processes = []
+    
+    # Only kill Playwright-launched browsers (they have specific command line args)
+    # This avoids killing the user's personal browser
+    try:
+        logger.info("Killing Playwright browser processes...")
+        # Playwright browsers have --disable-blink-features=AutomationControlled in args
+        result = subprocess.run(
+            ['pkill', '-9', '-f', 'disable-blink-features=AutomationControlled'],
+            capture_output=True
+        )
+        if result.returncode == 0:
+            killed_processes.append('playwright-browser')
+            logger.info("Killed Playwright browser processes")
+    except Exception as e:
+        logger.warning(f"Error killing Playwright browser: {e}")
+    
+    # Also kill any playwright node processes
+    try:
+        result = subprocess.run(['pkill', '-9', '-f', 'playwright'], capture_output=True)
+        if result.returncode == 0:
+            killed_processes.append('playwright')
+    except:
+        pass
+    
+    # Kill browsers with --headless flag (test browsers)
+    try:
+        result = subprocess.run(['pkill', '-9', '-f', '--headless.*chromium'], capture_output=True)
+        if result.returncode == 0:
+            killed_processes.append('headless-chromium')
+    except:
+        pass
+    
+    # Disconnect exit node
+    try:
+        logger.info("Disconnecting exit node...")
+        TailscaleManager.disable_exit_node()
+        logger.info("Exit node disconnected")
+    except Exception as e:
+        logger.warning(f"Error disconnecting exit node: {e}")
+    
+    logger.info("=" * 50)
+    logger.info("FORCE STOP COMPLETE!")
+    logger.info("=" * 50)
+    
+    return jsonify({
+        'success': True,
+        'message': 'Test force stopped! Playwright browser killed, exit node disconnected.',
+        'killed_processes': killed_processes
+    })
+
+
 # ============================================
 # Settings Routes
 # ============================================
@@ -781,6 +1050,7 @@ SETTINGS_FILE = os.path.join(os.path.dirname(__file__), 'settings.json')
 # Default settings
 DEFAULT_SETTINGS = {
     'headless': False,
+    'browser': 'chromium',  # 'chromium', 'firefox', 'webkit', 'stealth' (anti-detection)
     'max_retries': 5,
     'skip_duplicates': True,
     'skip_checked': True,
@@ -790,6 +1060,18 @@ DEFAULT_SETTINGS = {
     'always_use_exit_node': False,  # Connect to exit node before each check
     'disconnect_after_task': False,  # Disconnect from exit node after task completes
     'debug_logging': False,  # Enable verbose debug logging
+    # Browser Profile settings (Anti-Detection)
+    'browser_profile': 'desktop_windows',  # Profile: desktop_windows, desktop_mac, mobile_iphone, mobile_android, tablet_ipad, custom
+    'browser_profile_custom': {  # Custom profile settings (used when browser_profile is 'custom')
+        'viewport_width': 1920,
+        'viewport_height': 1080,
+        'user_agent': '',
+        'is_mobile': False,
+        'has_touch': False,
+        'device_scale_factor': 1,
+        'locale': 'en-US',
+        'timezone_id': 'America/New_York'
+    },
     # Gemini AI CAPTCHA Solver settings
     'gemini_api_keys': [],  # List of API keys for rotation
     'gemini_current_key_index': 0,  # Current key being used
@@ -1055,6 +1337,48 @@ def get_settings():
     return jsonify({'success': True, 'settings': app_settings})
 
 
+@app.route('/settings/browsers')
+def get_available_browsers():
+    """Get list of available browsers"""
+    browsers = [
+        {'id': 'chromium', 'name': 'Chromium', 'description': 'Open-source Chrome engine (default)'},
+        {'id': 'chrome', 'name': 'Google Chrome', 'description': 'System-installed Chrome'},
+        {'id': 'msedge', 'name': 'Microsoft Edge', 'description': 'System-installed Edge'},
+        {'id': 'firefox', 'name': 'Firefox', 'description': 'Mozilla Firefox'},
+        {'id': 'webkit', 'name': 'WebKit (Safari)', 'description': 'Apple Safari engine'},
+        {'id': 'stealth', 'name': '🔒 Stealth (UC Mode)', 'description': 'Anti-detection browser - bypasses Cloudflare/CAPTCHA'}
+    ]
+    return jsonify({
+        'success': True, 
+        'browsers': browsers,
+        'current': app_settings.get('browser', 'chromium')
+    })
+
+
+@app.route('/settings/browser_profiles')
+def get_browser_profiles():
+    """Get list of available browser profiles for anti-detection"""
+    from card_checker import BROWSER_PROFILES
+    
+    profiles = []
+    for key, profile in BROWSER_PROFILES.items():
+        profiles.append({
+            'id': key,
+            'name': profile.get('name', key),
+            'description': profile.get('description', ''),
+            'viewport': profile.get('viewport', {}),
+            'is_mobile': profile.get('is_mobile', False),
+            'has_touch': profile.get('has_touch', False)
+        })
+    
+    return jsonify({
+        'success': True,
+        'profiles': profiles,
+        'current': app_settings.get('browser_profile', 'desktop_windows'),
+        'custom_settings': app_settings.get('browser_profile_custom', {})
+    })
+
+
 @app.route('/settings', methods=['POST'])
 def update_settings():
     """Update settings and save to file"""
@@ -1064,7 +1388,7 @@ def update_settings():
         data = request.get_json()
         
         # Update only provided settings
-        for key in ['headless', 'max_retries', 'skip_duplicates', 'skip_checked', 'timeout', 'auto_check_interval', 'captcha_mode', 'always_use_exit_node', 'disconnect_after_task', 'debug_logging', 'gemini_api_keys', 'gemini_current_key_index', 'gemini_model', 'gemini_prompt', 'gemini_prompt_preset', 'gemini_dynamic_recheck', 'gemini_debug_save', 'custom_prompts']:
+        for key in ['headless', 'browser', 'max_retries', 'skip_duplicates', 'skip_checked', 'timeout', 'auto_check_interval', 'captcha_mode', 'always_use_exit_node', 'disconnect_after_task', 'debug_logging', 'browser_profile', 'browser_profile_custom', 'gemini_api_keys', 'gemini_current_key_index', 'gemini_model', 'gemini_prompt', 'gemini_prompt_preset', 'gemini_dynamic_recheck', 'gemini_debug_save', 'custom_prompts']:
             if key in data:
                 app_settings[key] = data[key]
         
@@ -1509,6 +1833,402 @@ def reset_gemini_stats():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ============================================
+# Plugin Routes - Browser Testing
+# ============================================
+
+# Store current plugin test state
+plugin_test_state = {
+    'running': False,
+    'browser': None,
+    'page': None
+}
+
+@app.route('/plugin/test', methods=['POST'])
+def plugin_test():
+    """Run a browser test with custom settings"""
+    global plugin_test_state
+    
+    try:
+        data = request.get_json()
+        
+        url = data.get('url', '')
+        browser_type = data.get('browser', 'chromium')
+        exit_node = data.get('exit_node', '')
+        headers = data.get('headers', {})
+        timeout = data.get('timeout', 30) * 1000  # Convert to ms
+        viewport = data.get('viewport', '1920x1080')
+        headless = data.get('headless', False)
+        take_screenshot = data.get('screenshot', True)
+        capture_console = data.get('capture_console', False)
+        keep_open = data.get('keep_open', False)
+        script = data.get('script', '')
+        
+        if not url:
+            return jsonify({'success': False, 'error': 'URL is required'}), 400
+        
+        logger.info(f"Plugin test: {url} with browser={browser_type}")
+        
+        # Parse viewport
+        try:
+            vp_parts = viewport.split('x')
+            viewport_width = int(vp_parts[0])
+            viewport_height = int(vp_parts[1])
+        except:
+            viewport_width = 1920
+            viewport_height = 1080
+        
+        # Connect to exit node if specified
+        exit_node_used = None
+        if exit_node:
+            logger.info(f"Connecting to exit node: {exit_node}")
+            if TailscaleManager.switch_exit_node(exit_node):
+                import time
+                time.sleep(2)
+                exit_node_used = exit_node
+                logger.info(f"Connected to exit node: {exit_node}")
+            else:
+                logger.warning(f"Failed to connect to exit node: {exit_node}")
+        
+        plugin_test_state['running'] = True
+        
+        # Use stealth browser or playwright
+        if browser_type == 'stealth':
+            result = run_stealth_plugin_test(url, headers, timeout, viewport_width, viewport_height, headless, take_screenshot, capture_console, script, keep_open)
+        else:
+            result = asyncio.run(run_playwright_plugin_test(
+                url, browser_type, headers, timeout, viewport_width, viewport_height, 
+                headless, take_screenshot, capture_console, script, keep_open
+            ))
+        
+        plugin_test_state['running'] = False
+        
+        if exit_node_used:
+            result['exit_node_used'] = exit_node_used
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        plugin_test_state['running'] = False
+        logger.error(f"Plugin test error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+async def run_playwright_plugin_test(url, browser_type, headers, timeout, viewport_width, viewport_height, headless, take_screenshot, capture_console, script, keep_open=False):
+    """Run browser test using Playwright"""
+    from playwright.async_api import async_playwright
+    import base64
+    import time
+    
+    result = {
+        'success': False,
+        'url': url,
+        'console_logs': [],
+        'response_headers': {}
+    }
+    
+    start_time = time.time()
+    
+    async with async_playwright() as p:
+        # Launch browser
+        browser_launcher = getattr(p, browser_type if browser_type in ['chromium', 'firefox', 'webkit'] else 'chromium')
+        
+        browser = await browser_launcher.launch(
+            headless=headless,
+            channel='chrome' if browser_type == 'chrome' else ('msedge' if browser_type == 'msedge' else None)
+        )
+        
+        context = await browser.new_context(
+            viewport={'width': viewport_width, 'height': viewport_height},
+            extra_http_headers=headers if headers else None
+        )
+        
+        page = await context.new_page()
+        
+        # Capture console logs
+        if capture_console:
+            page.on('console', lambda msg: result['console_logs'].append({
+                'type': msg.type,
+                'message': msg.text
+            }))
+        
+        try:
+            # Navigate to URL
+            response = await page.goto(url, timeout=timeout, wait_until='networkidle')
+            
+            result['success'] = True
+            result['final_url'] = page.url
+            result['title'] = await page.title()
+            result['status_code'] = response.status if response else None
+            result['load_time'] = int((time.time() - start_time) * 1000)
+            
+            # Get response headers
+            if response:
+                result['response_headers'] = dict(response.headers)
+            
+            # Take screenshot
+            if take_screenshot:
+                screenshot_bytes = await page.screenshot(full_page=False)
+                result['screenshot'] = base64.b64encode(screenshot_bytes).decode('utf-8')
+            
+            # Execute custom script
+            if script:
+                try:
+                    script_result = await page.evaluate(script)
+                    result['script_result'] = script_result
+                except Exception as e:
+                    result['script_result'] = f'Error: {str(e)}'
+            
+            # Try to detect IP from page content
+            try:
+                content = await page.content()
+                import re
+                ip_match = re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', content)
+                if ip_match:
+                    result['detected_ip'] = ip_match.group()
+            except:
+                pass
+            
+            # Keep browser open if requested
+            if keep_open:
+                result['browser_kept_open'] = True
+                result['message'] = 'Browser is kept open. Use Stop button to close it.'
+                # Store browser reference for later closing
+                plugin_test_state['browser'] = browser
+                plugin_test_state['page'] = page
+                # Wait indefinitely (until stopped)
+                while plugin_test_state.get('running', False):
+                    await asyncio.sleep(1)
+                
+        except Exception as e:
+            result['success'] = False
+            result['error'] = str(e)
+            result['load_time'] = int((time.time() - start_time) * 1000)
+        
+        if not keep_open:
+            await browser.close()
+    
+    return result
+
+
+def run_stealth_plugin_test(url, headers, timeout, viewport_width, viewport_height, headless, take_screenshot, capture_console, script, keep_open=False):
+    """Run browser test using undetected-chromedriver (stealth mode)"""
+    import base64
+    import time
+    import subprocess
+    import re
+    import tempfile
+    import shutil
+    
+    result = {
+        'success': False,
+        'url': url,
+        'console_logs': [],
+        'response_headers': {}
+    }
+    
+    start_time = time.time()
+    
+    # Clean up any zombie chrome/chromedriver processes first
+    logger.info("Cleaning up old browser processes...")
+    try:
+        subprocess.run(['pkill', '-9', '-f', 'chromedriver'], capture_output=True, timeout=3)
+    except:
+        pass
+    try:
+        subprocess.run(['pkill', '-9', '-f', 'chrome.*--test-type'], capture_output=True, timeout=3)
+    except:
+        pass
+    time.sleep(1)
+    
+    # Detect Chrome version
+    chrome_version = None
+    try:
+        # Try to get Chrome version
+        for chrome_path in ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser', '/snap/bin/chromium']:
+            try:
+                output = subprocess.check_output([chrome_path, '--version'], stderr=subprocess.DEVNULL).decode()
+                match = re.search(r'(\d+)\.', output)
+                if match:
+                    chrome_version = int(match.group(1))
+                    logger.info(f"Detected Chrome version: {chrome_version}")
+                    break
+            except:
+                continue
+    except Exception as e:
+        logger.warning(f"Could not detect Chrome version: {e}")
+    
+    # Create a fresh temporary user data directory
+    user_data_dir = tempfile.mkdtemp(prefix='uc_plugin_')
+    logger.info(f"Using temp user data dir: {user_data_dir}")
+    
+    driver = None
+    use_seleniumbase = False
+    
+    try:
+        from seleniumbase import Driver
+        logger.info("Using SeleniumBase UC mode...")
+        driver = Driver(uc=True, headless=headless, user_data_dir=user_data_dir)
+        driver.set_window_size(viewport_width, viewport_height)
+    except Exception as e:
+        logger.warning(f"SeleniumBase failed: {e}, trying undetected_chromedriver...")
+        use_seleniumbase = False
+        
+        try:
+            import undetected_chromedriver as uc
+            
+            options = uc.ChromeOptions()
+            if headless:
+                options.add_argument('--headless=new')
+            options.add_argument(f'--window-size={viewport_width},{viewport_height}')
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument(f'--user-data-dir={user_data_dir}')
+            
+            driver = uc.Chrome(options=options, headless=headless, version_main=chrome_version, user_data_dir=user_data_dir)
+            driver.set_page_load_timeout(timeout // 1000)
+        except Exception as e2:
+            result['success'] = False
+            result['error'] = f'Both SeleniumBase and UC failed: {str(e)} / {str(e2)}'
+            result['load_time'] = int((time.time() - start_time) * 1000)
+            # Cleanup temp dir
+            try:
+                shutil.rmtree(user_data_dir, ignore_errors=True)
+            except:
+                pass
+            return result
+    
+    try:
+        # Navigate to URL
+        driver.get(url)
+        
+        result['success'] = True
+        result['final_url'] = driver.current_url
+        result['title'] = driver.title
+        result['load_time'] = int((time.time() - start_time) * 1000)
+        
+        # Take screenshot
+        if take_screenshot:
+            screenshot_bytes = driver.get_screenshot_as_png()
+            result['screenshot'] = base64.b64encode(screenshot_bytes).decode('utf-8')
+        
+        # Execute custom script
+        if script:
+            try:
+                script_result = driver.execute_script(f"return (function() {{ {script} }})();")
+                result['script_result'] = script_result
+            except Exception as e:
+                result['script_result'] = f'Error: {str(e)}'
+        
+        # Capture console logs if requested
+        if capture_console:
+            try:
+                logs = driver.get_log('browser')
+                result['console_logs'] = [{'type': log['level'].lower(), 'message': log['message']} for log in logs]
+            except:
+                pass
+        
+        # Try to detect IP from page content
+        try:
+            content = driver.page_source
+            ip_match = re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', content)
+            if ip_match:
+                result['detected_ip'] = ip_match.group()
+        except:
+            pass
+        
+        # Keep browser open if requested
+        if keep_open:
+            result['browser_kept_open'] = True
+            result['message'] = 'Browser is kept open. Use Stop button to close it.'
+            plugin_test_state['browser'] = driver
+            # Wait until stopped
+            while plugin_test_state.get('running', False):
+                time.sleep(1)
+            
+    except Exception as e:
+        result['success'] = False
+        result['error'] = str(e)
+        result['load_time'] = int((time.time() - start_time) * 1000)
+    
+    finally:
+        if driver and not keep_open:
+            try:
+                driver.quit()
+            except:
+                pass
+            # Give it a moment to close
+            time.sleep(1)
+        
+        # Cleanup temp user data dir if not keeping browser open
+        if not keep_open and 'user_data_dir' in dir():
+            try:
+                import shutil
+                shutil.rmtree(user_data_dir, ignore_errors=True)
+            except:
+                pass
+    
+    return result
+
+
+@app.route('/plugin/stop', methods=['POST'])
+def plugin_stop():
+    """Stop the running plugin test"""
+    global plugin_test_state
+    import subprocess
+    import shutil
+    import glob
+    
+    logger.info("Stopping plugin test...")
+    
+    plugin_test_state['running'] = False
+    
+    # Try to close browser gracefully first
+    if plugin_test_state.get('browser'):
+        try:
+            browser = plugin_test_state['browser']
+            if hasattr(browser, 'quit'):
+                browser.quit()
+            elif hasattr(browser, 'close'):
+                import asyncio
+                asyncio.run(browser.close())
+            logger.info("Browser closed gracefully")
+        except Exception as e:
+            logger.warning(f"Could not close browser gracefully: {e}")
+        plugin_test_state['browser'] = None
+        plugin_test_state['page'] = None
+    
+    # Kill browser processes
+    try:
+        subprocess.run(['pkill', '-9', '-f', 'chromedriver'], capture_output=True, timeout=3)
+    except:
+        pass
+    
+    try:
+        subprocess.run(['pkill', '-9', '-f', 'chrome.*--test-type'], capture_output=True, timeout=3)
+    except:
+        pass
+    
+    try:
+        subprocess.run(['pkill', '-9', '-f', 'disable-blink-features=AutomationControlled'], capture_output=True, timeout=3)
+    except:
+        pass
+    
+    # Cleanup temp user data directories
+    try:
+        import tempfile
+        temp_dir = tempfile.gettempdir()
+        for d in glob.glob(os.path.join(temp_dir, 'uc_plugin_*')):
+            try:
+                shutil.rmtree(d, ignore_errors=True)
+            except:
+                pass
+    except:
+        pass
+    
+    return jsonify({'success': True, 'message': 'Plugin test stopped'})
 
 
 if __name__ == '__main__':

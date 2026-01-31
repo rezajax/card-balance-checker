@@ -1,5 +1,6 @@
 {
   "headless": false,
+  "browser": "stealth",
   "max_retries": 5,
   "skip_duplicates": true,
   "skip_checked": true,
@@ -9,6 +10,17 @@
   "always_use_exit_node": true,
   "disconnect_after_task": true,
   "debug_logging": true,
+  "browser_profile": "mobile_iphone_chrome",
+  "browser_profile_custom": {
+    "viewport_width": 1920,
+    "viewport_height": 1080,
+    "user_agent": "",
+    "is_mobile": false,
+    "has_touch": false,
+    "device_scale_factor": 1,
+    "locale": "en-US",
+    "timezone_id": "America/New_York"
+  },
   "gemini_api_keys": [
     "AIzaSyC7idW9KWmdgQEZQbB1vnYvkZ6JzdeiBIU",
     "AIzaSyDTsb_1xptMo98EqeJkUPMAJNb3B-QE35E",
