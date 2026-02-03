@@ -1,216 +1,264 @@
-# 🤖 Browser Automation با Playwright
+# Card Balance Checker & Browser Automation
 
-پروژه اتومیشن مرورگر با استفاده از بهترین تکنولوژی‌ها برای Arch Linux
+A multi-platform automation system for checking gift card balances with advanced anti-detection capabilities and AI-powered CAPTCHA solving.
 
-## 🚀 ویژگی‌ها
+## Features
 
-- ✅ استفاده از **Playwright** (سریع‌ترین و پایدارترین ابزار اتومیشن)
-- ✅ **Async/Await** برای بهترین performance
-- ✅ پشتیبانی از **Chromium, Firefox, WebKit**
-- ✅ **Retry mechanism** برای handling خطاها
-- ✅ **Smart selectors** با fallback
-- ✅ **Logging** کامل و حرفه‌ای
-- ✅ پنهان کردن **automation detection**
-- ✅ گرفتن **screenshot** و ذخیره نتایج در JSON
-- ✅ تنظیمات از طریق **environment variables**
+- **Multi-Browser Support** - Playwright & SeleniumBase for maximum compatibility
+- **Anti-Detection** - Stealth browser mode bypasses Cloudflare and anti-bot systems
+- **AI CAPTCHA Solving** - Gemini AI integration for reCAPTCHA challenges
+- **Google Sheets Integration** - Batch process cards from spreadsheets
+- **VPN/Exit Node Rotation** - Tailscale integration for IP management
+- **Phone Automation** - Android device control via ADB as alternative approach
+- **Real-time Monitoring** - Live logs and status updates via web panel
 
-## 📦 نصب و راه‌اندازی
+## System Architecture
 
-### 1. نصب Python dependencies
+```mermaid
+graph TB
+    subgraph "User Interface"
+        WEB[Web Panel<br/>Flask + HTML/JS]
+    end
+
+    subgraph "Automation Engines"
+        PLAYWRIGHT[CardChecker<br/>Playwright]
+        STEALTH[StealthCardChecker<br/>SeleniumBase UC]
+    end
+
+    subgraph "AI & Services"
+        GEMINI[Gemini AI<br/>CAPTCHA Solver]
+        SHEETS[Google Sheets<br/>Card Data]
+        TAILSCALE[Tailscale<br/>VPN Exit Nodes]
+    end
+
+    subgraph "Alternative"
+        PHONE[Phone Automation<br/>ADB + scrcpy]
+    end
+
+    WEB --> PLAYWRIGHT
+    WEB --> STEALTH
+    PLAYWRIGHT --> GEMINI
+    STEALTH --> GEMINI
+    WEB --> SHEETS
+    WEB --> TAILSCALE
+    WEB --> PHONE
+```
+
+## Quick Start
+
+### Using UV (Recommended)
 
 ```bash
-# نصب pip اگر نداری
-sudo pacman -S python-pip
+# Install UV
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# نصب کتابخانه‌ها
+# Run the application
+uv run app.py
+```
+
+Open **http://127.0.0.1:5000** in your browser.
+
+### Manual Installation
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 
-# نصب مرورگرهای Playwright
-playwright install
+# Install Playwright browsers
+playwright install chromium
 
-# (اختیاری) نصب dependencies سیستمی
-playwright install-deps
+# Run
+python app.py
 ```
 
-### 2. تنظیم پروژه
+## Documentation
 
-```bash
-# کپی فایل نمونه تنظیمات
-cp .env.example .env
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | System design with mermaid diagrams |
+| [Setup Guide](docs/SETUP_GUIDE.md) | Installation and configuration |
+| [API Reference](docs/API_REFERENCE.md) | REST API endpoints |
+| [Development Journey](docs/DEVELOPMENT_JOURNEY.md) | Lessons learned and best practices |
 
-# ویرایش تنظیمات
-nano .env
+## Project Structure
+
+```
+cursor/
+├── app.py                    # Main Flask web application
+├── card_checker.py           # Playwright-based automation
+├── stealth_browser.py        # SeleniumBase anti-detection wrapper
+├── stealth_card_checker.py   # Card checker with stealth browser
+├── sheets_manager.py         # Google Sheets integration
+├── settings.json             # Application settings
+│
+├── prompts/                  # AI CAPTCHA prompts
+│   ├── detailed.md           # Full grid explanation
+│   ├── simple.md             # Minimal instructions
+│   ├── visual.md             # Coordinate-based
+│   └── expert.md             # Technical precision
+│
+├── phone/                    # Phone automation module
+│   ├── main.py               # CLI entry point
+│   ├── web_app.py            # Web interface (port 5001)
+│   ├── adb_controller.py     # ADB commands
+│   └── ...
+│
+├── templates/                # Web UI templates
+├── static/                   # CSS and assets
+├── docs/                     # Documentation
+│
+├── pyproject.toml            # UV/pip configuration
+└── requirements.txt          # Dependencies
 ```
 
-## 🎯 استفاده
+## Configuration
 
-### نسخه ساده
+### Settings (settings.json)
 
-```bash
-python browser_automation.py
-```
-
-این فایل رو قبل از اجرا ویرایش کن و بخش `CONFIG` رو تغییر بده:
-
-```python
-CONFIG = {
-    'url': 'https://your-website.com',  # آدرس سایت
-    'input_numbers': ['123', '456', '789'],  # اعدادی که میخوای وارد کنی
-    'input_selectors': ['#field1', '#field2', '#field3'],  # سلکتورهای فیلدها
-    'submit_selector': 'button[type="submit"]',  # دکمه سابمیت
-    'result_selectors': ['.result1', '.result2'],  # المنت‌های نتیجه
+```json
+{
+  "browser": "stealth",
+  "captcha_mode": "gemini",
+  "max_retries": 5,
+  "always_use_exit_node": true,
+  "gemini_api_keys": ["key1", "key2"],
+  "gemini_model": "gemini-2.5-flash",
+  "gemini_prompt_preset": "expert"
 }
 ```
 
-### نسخه پیشرفته (توصیه میشه)
+### Browser Options
+
+| Browser | Description | Use Case |
+|---------|-------------|----------|
+| `chromium` | Standard Playwright | Fast, most compatible |
+| `stealth` | SeleniumBase UC Mode | Anti-detection required |
+| `firefox` | Firefox browser | Alternative fingerprint |
+| `chrome` | System Chrome | Existing profiles |
+
+### CAPTCHA Modes
+
+| Mode | Description |
+|------|-------------|
+| `auto` | Try exit node rotation first |
+| `gemini` | Use Gemini AI solver |
+| `manual` | Wait for user to solve |
+
+## Phone Automation
+
+Alternative approach using real Android devices:
 
 ```bash
-python advanced_automation.py
+# Connect phone via USB
+adb devices
+
+# Run phone web app
+uv run phone/web_app.py
 ```
 
-این نسخه تنظیمات رو از فایل `.env` میخونه و قابلیت‌های بیشتری داره.
+Open **http://127.0.0.1:5001** for phone control panel.
 
-## ⚙️ تنظیمات
+## API Usage
 
-### چطور سلکتورها رو پیدا کنم؟
+### Check Card Balance
 
-1. **باز کردن Developer Tools** در مرورگر: `F12`
-2. **کلیک روی آیکون Inspect** (گوشه بالا سمت چپ)
-3. **کلیک روی المنت** مورد نظر در صفحه
-4. **راست کلیک روی HTML** در Developer Tools
-5. **Copy > Copy selector**
-
-### انواع سلکتورها
-
-```python
-# CSS Selectors
-'#my-id'              # ID
-'.my-class'           # Class
-'input[name="field"]' # Attribute
-'button[type="submit"]' # Button
-
-# XPath (برای موارد پیچیده)
-'xpath=//button[contains(text(), "ارسال")]'
-
-# Text (برای متن)
-'text=ارسال فرم'
+```bash
+curl -X POST http://127.0.0.1:5000/check_balance \
+  -H "Content-Type: application/json" \
+  -d '{
+    "card_number": "4111111111111111",
+    "exp_month": "12",
+    "exp_year": "25",
+    "cvv": "123"
+  }'
 ```
 
-## 📊 خروجی‌ها
+### Get Sheet Cards
 
-پس از اجرا، فایل‌های زیر ساخته میشن:
-
-- `results.json` - نتایج استخراج شده
-- `screenshot_*.png` - اسکرین‌شات از صفحه
-- `automation.log` - لاگ‌های اجرا
-- `error_screenshot.png` - در صورت بروز خطا
-
-## 🛠️ مثال کامل
-
-فرض کن یک سایت داریم که میخوایم:
-1. سه تا عدد وارد کنیم
-2. فرم رو سابمیت کنیم
-3. دو تا نتیجه رو بخونیم
-
-```python
-CONFIG = {
-    'url': 'https://calculator-example.com',
-    'input_numbers': ['10', '20', '30'],
-    'input_selectors': [
-        '#number1',
-        '#number2', 
-        '#number3'
-    ],
-    'submit_selector': 'button.calculate',
-    'result_selectors': [
-        '#sum-result',
-        '#average-result'
-    ]
-}
+```bash
+curl http://127.0.0.1:5000/sheets/cards
 ```
 
-## 🎨 قابلیت‌های پیشرفته
+### Switch Exit Node
 
-### 1. تغییر نوع مرورگر
-
-```python
-await automation.initialize(browser_type='firefox')  # یا webkit
+```bash
+curl -X POST http://127.0.0.1:5000/exit_nodes/switch \
+  -H "Content-Type: application/json" \
+  -d '{"hostname": "us-west-2.tailscale.com"}'
 ```
 
-### 2. حالت Headless
+See [API Reference](docs/API_REFERENCE.md) for complete documentation.
 
-```python
-automation = AdvancedBrowserAutomation(headless=True)
+## Development
+
+### Running in Development Mode
+
+```bash
+# With auto-reload
+FLASK_DEBUG=1 uv run app.py
 ```
 
-### 3. Slow Motion برای Debug
+### Running Tests
 
-```python
-automation = AdvancedBrowserAutomation(slow_mo=500)  # 500ms تاخیر
+```bash
+uv run pytest
 ```
 
-### 4. استخراج داده‌های پیچیده‌تر
+### Code Formatting
 
-```python
-results = await automation.extract_data({
-    'title': 'h1.page-title',
-    'price': '.product-price',
-    'description': '#product-desc',
-    'rating': '.star-rating'
-})
+```bash
+uv run black .
+uv run ruff check .
 ```
 
-## 🔧 رفع مشکلات رایج
+## Troubleshooting
 
-### مشکل 1: المنت پیدا نمیشه
+### Browser Won't Start
 
-```python
-# استفاده از انتظار بیشتر
-await automation.wait_for_element('#my-element', timeout=60000)
+```bash
+# Kill zombie processes
+pkill -9 -f chromedriver
+pkill -9 -f chromium
 
-# یا استفاده از XPath
-selector = 'xpath=//div[contains(@class, "my-class")]'
+# Reinstall browsers
+playwright install chromium --force
 ```
 
-### مشکل 2: سایت تشخیص میده که بات هست
+### CAPTCHA Not Solving
 
-```python
-# این قابلیت‌ها در کد موجوده:
-# - پنهان کردن navigator.webdriver
-# - User agent واقعی
-# - Viewport و timezone مناسب
+1. Verify Gemini API key is valid
+2. Try different prompt preset
+3. Check `gemini_debug_save: true` for debug images
+
+### Phone Not Detected
+
+```bash
+adb kill-server
+adb start-server
+adb devices
 ```
 
-### مشکل 3: صفحه خیلی کند لود میشه
+See [Setup Guide](docs/SETUP_GUIDE.md) for more troubleshooting tips.
 
-```python
-# تغییر تایم‌اوت
-self.page.set_default_timeout(60000)  # 60 ثانیه
+## Requirements
 
-# یا صبر کردن برای المنت خاص
-await automation.wait_for_element('.loaded-indicator')
-```
+- Python 3.10+
+- Chromium/Chrome browser
+- ADB (for phone automation)
+- Tailscale (for exit nodes, optional)
 
-## 📚 منابع بیشتر
+## License
 
-- [Playwright Documentation](https://playwright.dev/python/)
-- [CSS Selectors Reference](https://www.w3schools.com/cssref/css_selectors.php)
-- [XPath Tutorial](https://www.w3schools.com/xml/xpath_intro.asp)
+MIT License
 
-## 🤝 کمک و پشتیبانی
+## Contributing
 
-اگر مشکلی داشتی:
-1. لاگ `automation.log` رو بررسی کن
-2. `error_screenshot.png` رو نگاه کن
-3. با `headless=False` اجرا کن تا ببینی چه اتفاقی می‌افته
-
-## 📝 نکات مهم
-
-- ✅ همیشه سلکتورها رو قبل از اجرا تست کن
-- ✅ برای سایت‌های واقعی، از `time.sleep()` بین درخواست‌ها استفاده کن
-- ✅ احترام به `robots.txt` و terms of service سایت‌ها
-- ✅ برای production، از proxy و user agent rotation استفاده کن
-
----
-
-**ساخته شده با ❤️ برای Arch Linux**
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open Pull Request

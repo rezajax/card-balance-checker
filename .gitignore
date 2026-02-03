@@ -3,34 +3,55 @@
 .venv*/
 venv/
 env/
+.python-version
 
 # Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# UV
+.uv/
+uv.lock
 
 # Secrets and credentials (NEVER commit these!)
 .env
 credentials.json
 *.key
 *.pem
+service-account*.json
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+.cursor/
 
 # Logs and debug
 logs/
 *.log
 captcha_debug/
+automation.log
 
 # Screenshots and results
 screenshots/
+phone/screenshots/
 results/
 card_check_*.png
+result_*.png
+error_screenshot.png
+screenshot_*.png
+captcha_*.png
 
 # Downloaded files
 downloaded_files/
@@ -39,5 +60,14 @@ downloaded_files/
 .DS_Store
 Thumbs.db
 
-# Stats (optional, can be committed if you want history)
+# Stats
 prompt_stats.json
+
+# Temp files
+*.tmp
+*.temp
+/tmp/
+
+# SeleniumBase
+seleniumbase/
+.seleniumbase/

@@ -62,16 +62,31 @@ class StealthBrowser:
     
     def start(self):
         """شروع مرورگر stealth"""
+        import subprocess
+        import tempfile
+        import shutil
         from seleniumbase import Driver
         
         self.update_status("🔒 Starting Stealth Browser (UC Mode)...", 10)
+        
+        # Clean up zombie chromedriver processes first
+        try:
+            subprocess.run(['pkill', '-9', '-f', 'chromedriver'], capture_output=True, timeout=3)
+            time.sleep(0.5)
+        except:
+            pass
+        
+        # Create a fresh temp user data directory
+        self._temp_user_data = tempfile.mkdtemp(prefix='stealth_browser_')
+        logger.info(f"Using temp user data dir: {self._temp_user_data}")
         
         try:
             # استفاده از Driver mode برای کنترل بیشتر
             self.driver = Driver(
                 uc=True,
                 headless=self.headless,
-                proxy=self.proxy
+                proxy=self.proxy,
+                user_data_dir=self._temp_user_data
             )
             self._is_open = True
             self.update_status("✅ Stealth Browser started successfully", 15)
@@ -79,6 +94,11 @@ class StealthBrowser:
         except Exception as e:
             logger.error(f"Failed to start stealth browser: {e}")
             self.update_status(f"❌ Failed to start browser: {e}", 0)
+            # Cleanup temp dir on failure
+            try:
+                shutil.rmtree(self._temp_user_data, ignore_errors=True)
+            except:
+                pass
             return False
     
     def navigate(self, url: str, wait_time: int = 4):
@@ -133,40 +153,28 @@ class StealthBrowser:
         if not self.driver:
             return None
         
-        try:
-            if by == "xpath":
-                return self.driver.find_element("xpath", selector)
-            return self.driver.find_element("css selector", selector)
-        except Exception as e:
-            logger.debug(f"Element not found: {selector} - {e}")
-            return None
+        if by == "xpath":
+            return self.driver.find_element("xpath", selector)
+        return self.driver.find_element("css selector", selector)
     
     def find_elements(self, selector: str, by: str = "css"):
         """پیدا کردن چند element"""
         if not self.driver:
             return []
         
-        try:
-            if by == "xpath":
-                return self.driver.find_elements("xpath", selector)
-            return self.driver.find_elements("css selector", selector)
-        except Exception as e:
-            logger.debug(f"Elements not found: {selector} - {e}")
-            return []
+        if by == "xpath":
+            return self.driver.find_elements("xpath", selector)
+        return self.driver.find_elements("css selector", selector)
     
     def click(self, selector: str, by: str = "css"):
         """
         کلیک stealth روی element
         """
-        try:
-            element = self.find_element(selector, by)
-            if element:
-                self.driver.uc_click(element)
-                return True
-            return False
-        except Exception as e:
-            logger.warning(f"Click failed: {selector} - {e}")
-            return False
+        element = self.find_element(selector, by)
+        if element:
+            self.driver.uc_click(element)
+            return True
+        return False
     
     def type_text(self, selector: str, text: str, by: str = "css", clear: bool = True):
         """
@@ -178,20 +186,13 @@ class StealthBrowser:
             by: نوع سلکتور
             clear: پاک کردن فیلد قبل از تایپ
         """
-        try:
-            element = self.find_element(selector, by)
-            if element:
-                if clear:
-                    try:
-                        element.clear()
-                    except Exception:
-                        pass  # بعضی فیلدها clear نمیشن
-                element.send_keys(text)
-                return True
-            return False
-        except Exception as e:
-            logger.warning(f"Type text failed: {selector} - {e}")
-            return False
+        element = self.find_element(selector, by)
+        if element:
+            if clear:
+                element.clear()
+            element.send_keys(text)
+            return True
+        return False
     
     def wait_for_element(self, selector: str, timeout: int = None, by: str = "css"):
         """
@@ -222,150 +223,23 @@ class StealthBrowser:
     def handle_captcha_checkbox(self):
         """
         کلیک روی checkbox CAPTCHA (اگر وجود داشته باشد)
-        چند روش مختلف امتحان میشه
         """
-        # روش 1: استفاده از uc_gui_click_captcha
         try:
-            logger.info("Trying uc_gui_click_captcha...")
             self.driver.uc_gui_click_captcha()
-            time.sleep(1)
             return True
         except Exception as e:
-            logger.debug(f"uc_gui_click_captcha failed: {e}")
-        
-        # روش 2: سوییچ به iframe و کلیک مستقیم
-        try:
-            logger.info("Trying iframe switch method...")
-            # پیدا کردن iframe های reCAPTCHA
-            iframes = self.driver.find_elements("css selector", "iframe[src*='recaptcha'], iframe[title*='reCAPTCHA']")
-            for iframe in iframes:
-                try:
-                    self.driver.switch_to.frame(iframe)
-                    # پیدا کردن checkbox
-                    checkbox = self.driver.find_element("css selector", ".recaptcha-checkbox, #recaptcha-anchor, .rc-anchor-checkbox")
-                    if checkbox:
-                        self.driver.uc_click(checkbox)
-                        time.sleep(1)
-                        self.driver.switch_to.default_content()
-                        return True
-                except Exception:
-                    self.driver.switch_to.default_content()
-                    continue
-        except Exception as e:
-            logger.debug(f"iframe method failed: {e}")
-            try:
-                self.driver.switch_to.default_content()
-            except:
-                pass
-        
-        # روش 3: کلیک با JavaScript
-        try:
-            logger.info("Trying JavaScript click...")
-            script = """
-            var frames = document.querySelectorAll('iframe[src*="recaptcha"]');
-            for(var i = 0; i < frames.length; i++) {
-                try {
-                    var checkbox = frames[i].contentWindow.document.querySelector('.recaptcha-checkbox');
-                    if(checkbox) { checkbox.click(); return true; }
-                } catch(e) {}
-            }
-            return false;
-            """
-            result = self.driver.execute_script(script)
-            if result:
-                time.sleep(1)
-                return True
-        except Exception as e:
-            logger.debug(f"JavaScript click failed: {e}")
-        
-        # روش 4: کلیک روی container
-        try:
-            logger.info("Trying container click...")
-            containers = self.driver.find_elements("css selector", ".g-recaptcha, [data-sitekey], .recaptcha-checkbox-border")
-            for container in containers:
-                try:
-                    self.driver.uc_click(container)
-                    time.sleep(1)
-                    return True
-                except:
-                    continue
-        except Exception as e:
-            logger.debug(f"Container click failed: {e}")
-        
-        return False
+            logger.warning(f"Could not click captcha checkbox: {e}")
+            return False
     
     def handle_captcha(self):
         """
         Handle کردن CAPTCHA پیچیده‌تر
         """
         try:
-            logger.info("Trying uc_gui_handle_captcha...")
             self.driver.uc_gui_handle_captcha()
             return True
         except Exception as e:
             logger.warning(f"Could not handle captcha: {e}")
-            return False
-    
-    def click_recaptcha_v2(self):
-        """
-        روش خاص برای کلیک روی reCAPTCHA v2 checkbox
-        """
-        try:
-            # صبر برای لود شدن CAPTCHA
-            time.sleep(2)
-            
-            # پیدا کردن iframe اصلی
-            iframe_selectors = [
-                "iframe[src*='google.com/recaptcha']",
-                "iframe[src*='recaptcha/api2/anchor']",
-                "iframe[title*='reCAPTCHA']",
-            ]
-            
-            for selector in iframe_selectors:
-                try:
-                    iframes = self.driver.find_elements("css selector", selector)
-                    if iframes:
-                        iframe = iframes[0]
-                        # استفاده از uc_switch_to_frame
-                        try:
-                            self.driver.uc_switch_to_frame(iframe)
-                        except:
-                            self.driver.switch_to.frame(iframe)
-                        
-                        # کلیک روی checkbox
-                        checkbox_selectors = [
-                            "#recaptcha-anchor",
-                            ".recaptcha-checkbox-border",
-                            ".recaptcha-checkbox",
-                            "span[role='checkbox']"
-                        ]
-                        
-                        for cb_selector in checkbox_selectors:
-                            try:
-                                checkbox = self.driver.find_element("css selector", cb_selector)
-                                if checkbox:
-                                    self.driver.uc_click(checkbox)
-                                    time.sleep(2)
-                                    self.driver.switch_to.default_content()
-                                    return True
-                            except:
-                                continue
-                        
-                        self.driver.switch_to.default_content()
-                except Exception as e:
-                    logger.debug(f"Selector {selector} failed: {e}")
-                    try:
-                        self.driver.switch_to.default_content()
-                    except:
-                        pass
-            
-            return False
-        except Exception as e:
-            logger.error(f"click_recaptcha_v2 failed: {e}")
-            try:
-                self.driver.switch_to.default_content()
-            except:
-                pass
             return False
     
     def execute_script(self, script: str):
@@ -377,18 +251,6 @@ class StealthBrowser:
     def sleep(self, seconds: float):
         """صبر کردن"""
         time.sleep(seconds)
-    
-    def is_alive(self) -> bool:
-        """چک کردن اینکه مرورگر هنوز باز هست"""
-        if not self.driver or not self._is_open:
-            return False
-        try:
-            # سعی میکنیم URL فعلی رو بگیریم - اگر مرورگر بسته باشه خطا میده
-            _ = self.driver.current_url
-            return True
-        except Exception:
-            self._is_open = False
-            return False
     
     def close(self):
         """بستن مرورگر"""
